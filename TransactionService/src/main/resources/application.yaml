@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: transaction
+
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/ORCLPDB
+    username: TRANSACT_MS
+    password: transact123
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect # <--- ADD THIS LINE
+
+server:
+  port: 8001
+  servlet:
+    context-path: /transactions
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+      hibernate: ERROR
