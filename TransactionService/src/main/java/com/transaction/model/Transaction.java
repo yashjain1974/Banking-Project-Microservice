@@ -1,4 +1,4 @@
-package com.example.model;
+package com.transaction.model;
 
 import java.time.LocalDateTime;
 
@@ -41,16 +41,4 @@ public class Transaction {
     @Column(name = "transaction_date", nullable = false)
     private LocalDateTime transactionDate;
 
-    // Enums for TransactionType and TransactionStatus for type safety and validation
-    public enum TransactionType {
-        DEPOSIT,
-        WITHDRAW,
-        TRANSFER
-    }
-
-    public enum TransactionStatus {
-        SUCCESS,
-        FAILED,
-        PENDING
-    }
 }

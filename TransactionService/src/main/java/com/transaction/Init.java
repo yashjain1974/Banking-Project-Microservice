@@ -1,4 +1,4 @@
-package com.example.transaction;
+package com.transaction;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
