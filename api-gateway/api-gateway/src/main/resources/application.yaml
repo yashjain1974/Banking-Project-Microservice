@@ -1,26 +1,96 @@
-server:
-  port: 9010
-
 spring:
   application:
-    name: api-gateway
+    name: api-gateway # Name for Eureka registration
   config:
     import: optional:configserver:http://localhost:8888
   cloud:
     gateway:
       discovery:
         locator:
-          enabled: true
-          lower-case-service-id: true
+          enabled: true # Enable discovery locator for automatic routing based on service IDs
+          lower-case-service-id: true # Convert service IDs to lowercase for matching
       routes:
-        - id: loan-service
+        # User Service Routes
+        - id: user_service_auth
+          uri: lb://user-service # Load balance across instances of 'user-service' registered in Eureka
+          predicates:
+            - Path=/auth/** # Matches requests starting with /auth/
+          filters:
+            - RewritePath=/auth(?<segment>/?.*), /auth$\{segment} # Rewrites /auth/user/123 to /auth/user/123 for the user-service
+            # Note: The User Service's controller has @RequestMapping("/auth").
+            # So, the path needs to be preserved. If your downstream service's controller
+            # didn't have a base @RequestMapping, you'd rewrite to just '/${segment}'.
+
+        # Account Service Routes
+        - id: account_service
+          uri: lb://account-service
+          predicates:
+            - Path=/accounts/**
+          filters:
+            - RewritePath=/accounts(?<segment>/?.*), /accounts$\{segment} # Preserves /accounts path for the account-service
+
+        # Transaction Service Routes
+        - id: transaction_service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/transactions/**
+          filters:
+            - RewritePath=/transactions(?<segment>/?.*), /transactions$\{segment} # Preserves /transactions path for the transaction-service
+
+        # Notification Service Routes
+        - id: notification_service
+          uri: lb://notification-service
+          predicates:
+            - Path=/notifications/**
+          filters:
+            - RewritePath=/notifications(?<segment>/?.*), /notifications$\{segment} # Preserves /notifications path for the notification-service
+
+        # Loan Service Routes (Assuming loan-service on port 8004, base path /loans)
+        - id: loan_service
           uri: lb://loan-service
           predicates:
             - Path=/loans/**
           filters:
-            - RewritePath=/loans/(?<path>.*), /$\{path}
+            - RewritePath=/loans(?<segment>/?.*), /loans$\{segment} # Preserves /loans path for the loan-service
 
+        # Card Service Routes (Assuming card-service on port 8005, base path /cards)
+        - id: card_service
+          uri: lb://card-service
+          predicates:
+            - Path=/cards/**
+          filters:
+            - RewritePath=/cards(?<segment>/?.*), /cards$\{segment} # Preserves /cards path for the card-service
+
+  security: # Keycloak and OAuth2 Resource Server configuration for the Gateway itself
+    oauth2:
+      resourceserver:
+        jwt:
+          # This is the URL where Keycloak exposes its public keys (JWKS endpoint).
+          # The Gateway will use this to validate the signature of incoming JWTs.
+          # Replace 8080 with your Keycloak port, bank-realm with your realm name.
+          jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
+          # Alternatively, you can use issuer-uri if you prefer:
+          # issuer-uri: http://localhost:8080/realms/bank-realm
+
+server:
+  port: 9010 # The single entry point for your frontend (e.g., Angular app)
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: DEBUG # Enable detailed Gateway logging
+        security: DEBUG # Enable detailed Spring Security logging
+      hibernate: ERROR
+      io.github.resilience4j: DEBUG
+    reactor:
+      netty: DEBUG # For Netty (Webflux server) debugging
+
+# Eureka Client Configuration (essential for service discovery)
 eureka:
   client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka # Point to your Eureka Server's URL
+  instance:
+    preferIpAddress: true # Optional: Good for containerized environments
