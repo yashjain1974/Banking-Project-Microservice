@@ -27,6 +27,14 @@ logging:
         web: DEBUG
       hibernate: ERROR
       io.github.resilience4j: DEBUG # Enable Resilience4j logging for better visibility
+eureka:
+ client:
+  serviceUrl:
+    defaultZone: http://localhost:8761/eureka/ # Point to your Eureka Server's URL
+  register-with-eureka: true
+  fetch-registry: true
+ instance:
+  preferIpAddress: true # Optional: Good for containerized environments  
 
 # Resilience4j Configuration
 resilience4j:
