@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: account-service
+
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/ACCOUNT_PDB
+    username: ACCOUNT_MS
+    password: account123
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
+eureka:
+ client:
+  serviceUrl:
+    defaultZone: http://localhost:8761/eureka/ # Point to your Eureka Server's URL
+  register-with-eureka: true
+  fetch-registry: true
+ instance:
+  preferIpAddress: true # Optional: Good for containerized environments
+server:
+  port: 8003
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+      hibernate: ERROR
+      io.github.resilience4j: DEBUG # Enable Resilience4j logging for better visibility
+
+# Resilience4j Configuration for Account Service
+resilience4j:
+  circuitbreaker:
+    configs:
+      default: # Default configuration applied to all circuit breakers unless overridden
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignoreExceptions: # Specific business exceptions that should not open the circuit
+          - com.accountMicroservice.exception.AccountNotFoundException
+          - com.accountMicroservice.exception.InsufficientFundsException
+    instances:
+      userService: # Circuit breaker for User Service Feign client
+        baseConfig: default
+
+  retry:
+    configs:
+      default: # Default retry configuration
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException # Retry on 5xx errors
+        ignoreExceptions: # Exceptions that do NOT trigger a retry
+          - org.springframework.web.client.HttpClientErrorException # Do not retry on 4xx errors
+          - com.accountMicroservice.exception.AccountNotFoundException
+          - com.accountMicroservice.exception.InsufficientFundsException
+    instances:
+      userService: # Retry for User Service Feign client
+        baseConfig: default
+
