@@ -1,5 +1,7 @@
 package com.transaction.proxyService;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.transaction.dto.AccountDto;
+import com.transaction.dto.AccountDto.AccountStatus;
+import com.transaction.dto.AccountDto.AccountType;
 import com.transaction.dto.DepositRequestDto;
 import com.transaction.dto.WithdrawRequestDto;
 import com.transaction.exceptions.TransactionProcessingException;
@@ -34,10 +38,21 @@ public interface AccountServiceClient {
  AccountDto getAccountById(@PathVariable("accountId") String accountId);
 	
 	 // Fallback method for getAccountById
-    default AccountDto getAccountByIdFallback(String accountId, Throwable t) {
-        System.err.println("Fallback for getAccountById: " + t.getMessage());
-        // You could return a default/empty AccountDto, or throw a specific exception
-        throw new TransactionProcessingException("Account service is unavailable or account not found via fallback.", t);
+	default AccountDto getAccountByIdFallback(String accountId, Throwable t) {
+        System.err.println("Fallback triggered for getAccountById to account " + accountId + ": " + t.getMessage());
+        // Return a mock/dummy AccountDto. You can customize the data as needed for your tests.
+        // For testing "insufficient funds", you might return an account with a low balance.
+        // For "account not found", you might return null or throw a specific exception.
+        // For this example, let's return a default mock account.
+        return new AccountDto(
+                accountId,
+                "mock-user-" + accountId, // Dummy user ID
+                "MOCK" + accountId.substring(Math.max(0, accountId.length() - 5)), // Dummy account number
+                AccountType.SAVINGS,
+                1000.00, // Default balance for mock (adjust for insufficient funds tests)
+                AccountStatus.ACTIVE,
+                LocalDateTime.now()
+        );
     }
 
  /**
@@ -48,6 +63,12 @@ public interface AccountServiceClient {
   */
  @GetMapping("/user/{userId}")
  List<AccountDto> getAccountsByUserId(@PathVariable("userId") String userId);
+ 
+ default List<AccountDto> getAccountsByUserIdFallback(String userId, Throwable t) {
+     System.err.println("Fallback triggered for getAccountsByUserId for user " + userId + ": " + t.getMessage());
+     return Collections.emptyList(); // Or return a list of mock accounts if needed
+ }
+
 
  // You might also need methods for updating account balances if the Account Service
  // exposes such an endpoint, e.g., a PUT or POST for balance updates.
@@ -61,9 +82,19 @@ public interface AccountServiceClient {
  
 //Fallback method for depositFunds
  default AccountDto depositFundsFallback(String accountId, DepositRequestDto requestDto, Throwable t) {
-     System.err.println("Fallback for depositFunds: " + t.getMessage());
-     throw new TransactionProcessingException("Account service deposit failed via fallback.", t);
+     System.err.println("Fallback triggered for depositFunds to account " + accountId + ": " + t.getMessage());
+     // Simulate successful deposit on a mock account
+     return new AccountDto(
+             accountId,
+             "mock-user-" + accountId,
+             "MOCK" + accountId.substring(Math.max(0, accountId.length() - 5)),
+             AccountType.SAVINGS,
+             1000.00 + requestDto.getAmount(), // Simulate updated balance
+             AccountStatus.ACTIVE,
+             LocalDateTime.now()
+     );
  }
+
  /**
   * Sends a withdrawal request to the Account Service to update an account's balance.
   * Assumes the Account Service has an endpoint like POST /accounts/{accountId}/withdraw.

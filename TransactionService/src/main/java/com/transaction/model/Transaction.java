@@ -19,7 +19,7 @@ public class Transaction {
     @Column(name = "transaction_id", updatable = false, nullable = false)
     private String transactionId;
 
-    @Column(name = "from_account_id", nullable = false)
+    @Column(name = "from_account_id", nullable = true)
     private String fromAccountId; // Foreign key referencing Account Service's Account ID
 
     @Column(name = "to_account_id")

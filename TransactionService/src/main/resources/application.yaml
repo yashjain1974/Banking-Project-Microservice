@@ -1,6 +1,6 @@
 spring:
   application:
-    name: transaction
+    name: transaction-service
 
   datasource:
     url: jdbc:oracle:thin:@localhost:1521/ORCLPDB
