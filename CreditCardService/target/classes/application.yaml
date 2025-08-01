@@ -1,0 +1,95 @@
+spring:
+  application:
+    name: credit-card-service
+
+  profiles:
+    active: dev
+
+  datasource:
+    url: jdbc:h2:mem:creditdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    # For switchable DB, use profiles (like dev, prod)
+    # In prod: jdbc:oracle:thin:@localhost:1521/ORCL
+    # driver-class-name: oracle.jdbc.OracleDriver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    consumer:
+#      group-id: credit-card-consumer-group
+#      auto-offset-reset: earliest
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+#  config:
+#    import: "optional:configserver:http://localhost:8888"
+
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          jwk-set-uri: http://localhost:8080/oauth2/jwks
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka
+#    register-with-eureka: true
+#    fetch-registry: true
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#  tracing:
+#    sampling:
+#      probability: 1.0
+#  prometheus:
+#    metrics:
+#      export:
+#        enabled: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    com.creditcardservice: DEBUG
+
+server:
+  port: 8082
+
+## Zipkin tracing config
+#spring.zipkin.base-url: http://localhost:9411
+#spring.sleuth.sampler.probability: 1.0
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      transactionService:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+transaction:
+  service:
+    url: http://localhost:8083
