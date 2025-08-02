@@ -3,9 +3,9 @@ spring:
     name: account-service
 
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:orcl
-    username: hr
-    password: hr
+    url: jdbc:oracle:thin:@localhost:1521/ACCOUNT_PDB
+    username: ACCOUNT_MS
+    password: account123
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:

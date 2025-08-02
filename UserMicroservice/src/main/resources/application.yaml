@@ -4,9 +4,9 @@ spring:
   application:
     name: user-service # This name will be used for Eureka registration
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/AUTH_PDB
-    username: AUTH_MS
-    password: auth123
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    username: hr
+    password: hr
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:

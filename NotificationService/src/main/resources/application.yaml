@@ -3,9 +3,9 @@ spring:
     name: notification-service
 
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/NOTIFY_PDB
-    username: NOTIFY_MS
-    password: notify123
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    username: hr
+    password: hr
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:
