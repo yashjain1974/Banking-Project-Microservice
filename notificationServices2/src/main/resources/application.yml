@@ -1,0 +1,17 @@
+
+spring:
+datasource:
+url: jdbc:mysql://localhost:3306/bankapp
+username: root
+password: root
+driver-class-name: com.mysql.cj.jdbc.Driver
+jpa:
+hibernate:
+ddl-auto: update
+show-sql: true
+
+eureka:
+client:
+service-url:
+defaultZone: http://localhost:8761/eureka/
+
