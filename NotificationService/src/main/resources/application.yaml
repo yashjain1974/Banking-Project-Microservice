@@ -1,3 +1,5 @@
+# src/main/resources/application.yml (Notification Microservice)
+
 spring:
   application:
     name: notification-service
@@ -17,6 +19,17 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.OracleDialect
 
+  security: # <--- ADD THIS SECTION FOR SECURITY CONFIGURATION
+    oauth2:
+      resourceserver:
+        jwt:
+          # This is the URL where Keycloak exposes its public keys (JWKS endpoint).
+          # Spring Security will use this to validate the signature of incoming JWTs.
+          # Replace 8080 with your Keycloak port, bank-realm with your realm name.
+          jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
+          # Alternatively, you can use issuer-uri if you prefer. Spring will discover JWKS from here.
+          # issuer-uri: http://localhost:8080/realms/bank-realm
+
 server:
   port: 8002
 
@@ -27,12 +40,16 @@ logging:
         web: DEBUG
       hibernate: ERROR
       io.github.resilience4j: DEBUG # Enable Resilience4j logging for better visibility
+      org.springframework.security: DEBUG # Enable detailed Spring Security logging for JWT validation
+      org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
+      org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
 
 eureka:
- client:
-  serviceUrl:
-    defaultZone: http://localhost:8761/eureka/ # Point to your Eureka Server's URL
-  register-with-eureka: true
-  fetch-registry: true
- instance:
-  preferIpAddress: true # Optional: Good for containerized environments
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/ # Point to your Eureka Server's URL
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    preferIpAddress: true # Optional: Good for containerized environments

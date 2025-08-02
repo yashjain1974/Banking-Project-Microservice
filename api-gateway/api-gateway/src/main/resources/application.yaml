@@ -11,7 +11,7 @@ spring:
           lower-case-service-id: true # Convert service IDs to lowercase for matching
       routes:
         # User Service Routes
-        - id: user_service_auth
+        - id: user_service
           uri: lb://user-service # Load balance across instances of 'user-service' registered in Eureka
           predicates:
             - Path=/auth/** # Matches requests starting with /auth/

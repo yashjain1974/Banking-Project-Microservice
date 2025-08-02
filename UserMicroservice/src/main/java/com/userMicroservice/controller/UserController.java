@@ -128,13 +128,7 @@ public class UserController {
         return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                    .orElseThrow(() -> new UserNotFoundException("User profile not found for authenticated ID: " + userId));
     }
-
-    /**
-     * Handles GET /auth/users requests.
-     * Retrieves all user profiles. This endpoint is typically for administrative purposes.
-     *
-     * @return ResponseEntity with a list of all UserResponse DTOs and HTTP status 200 (OK).
-     */
+    
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')") // Only ADMINs can view all users
     public ResponseEntity<List<UserResponse>> getAllUsers() {
@@ -144,4 +138,13 @@ public class UserController {
         }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
+
+    /**
+     * Handles GET /auth/users requests.
+     * Retrieves all user profiles. This endpoint is typically for administrative purposes.
+     *
+     * @return ResponseEntity with a list of all UserResponse DTOs and HTTP status 200 (OK).
+     */
+    
+    
 }

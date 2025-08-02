@@ -1,3 +1,5 @@
+# src/main/resources/application.yml (Loan Microservice)
+
 spring:
   application:
     name: loan-service
@@ -6,39 +8,98 @@ spring:
     username: LOAN_MS
     password: loan123
     driver-class-name: oracle.jdbc.OracleDriver
-#  cloud:
-#    config:
-#      enabled: false
+  #  cloud:
+  #    config:
+  #      enabled: false # Keep this commented out if you're using Spring Cloud Config Server
   config:
-    import: optional:configserver:http://localhost:8888
-server:
-  port: 8004
-jpa:
-  hibernate:
-    ddl-auto: update
-  show-sql: true
-  properties:
+    import: optional:configserver:http://localhost:8888 # If using Spring Cloud Config Server
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.OracleDialect
-  
+
+  security: # Keycloak and OAuth2 Resource Server configuration
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
+          # issuer-uri: http://localhost:8080/realms/bank-realm
+
+server:
+  port: 8004
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+      hibernate: ERROR
+      io.github.resilience4j: DEBUG # Enable Resilience4j logging for better visibility
+      org.springframework.security: DEBUG # Enable detailed Spring Security logging for JWT validation
+      org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
+      org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
+
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/ # Point to your Eureka Server's URL
+  instance:
+    preferIpAddress: true # Optional: Good for containerized environments
+
 resilience4j:
   circuitbreaker:
+    configs: # <--- ADDED 'configs' section
+      default: # <--- DEFINED 'default' configuration
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s # Shorter wait for faster recovery in dev
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignoreExceptions:
+          - com.bank.loan.exception.LoanNotFoundException # Corrected package
     instances:
       loanServiceCB:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
+        baseConfig: default # Now this 'default' exists
+        # You can override specific properties here if needed, e.g.,
+        # slidingWindowSize: 20
+      userService:
+        baseConfig: default # Now this 'default' exists
 
   timelimiter:
+    configs: # <--- ADDED 'configs' section for timelimiter
+      default: # <--- DEFINED 'default' timelimiter configuration
+        timeoutDuration: 3s
     instances:
       loanServiceCB:
-        timeoutDuration: 3s
+        baseConfig: default # Now this 'default' exists
+      userService:
+        baseConfig: default # Now this 'default' exists
+
+  retry: # <--- ADDED 'retry' section
+    configs:
+      default: # <--- DEFINED 'default' retry configuration
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - com.bank.loan.exception.LoanNotFoundException # Corrected package
+    instances:
+      userService: # Retry for User Service Feign client
+        baseConfig: default # Now this 'default' exists
