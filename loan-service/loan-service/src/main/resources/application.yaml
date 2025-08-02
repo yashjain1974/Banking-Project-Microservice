@@ -44,7 +44,8 @@ logging:
       org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
       org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
-
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 eureka:
   client:
     register-with-eureka: true
@@ -104,12 +105,6 @@ resilience4j:
       userService: # Retry for User Service Feign client
         baseConfig: default # Now this 'default' exists
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus # Expose health, info, and prometheus endpoints
-  metrics:
-   prometheus:
-    metrics:
-      export:
-        enabled: true # Enable Prometheus metrics export
+  tracing:
+    sampling:
+      probability: 1.0
