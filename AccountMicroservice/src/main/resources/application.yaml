@@ -92,3 +92,14 @@ resilience4j:
     instances:
       userService: # Retry for User Service Feign client
         baseConfig: default
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true

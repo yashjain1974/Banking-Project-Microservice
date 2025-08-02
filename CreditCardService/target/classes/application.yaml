@@ -6,18 +6,10 @@ spring:
     active: dev
 
   datasource:
-    url: jdbc:h2:mem:creditdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-    # For switchable DB, use profiles (like dev, prod)
-    # In prod: jdbc:oracle:thin:@localhost:1521/ORCL
-    # driver-class-name: oracle.jdbc.OracleDriver
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:oracle:thin:@localhost:1521/CARD_PDB
+    username: CARD_MS
+    password: card123
+    driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:
     hibernate:
@@ -26,6 +18,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
 eureka:
  client:
   serviceUrl:
@@ -80,7 +73,7 @@ logging:
     com.creditcardservice: DEBUG
 
 server:
-  port: 8082
+  port: 8005
 
 ## Zipkin tracing config
 #spring.zipkin.base-url: http://localhost:9411
@@ -99,3 +92,14 @@ resilience4j:
 transaction:
   service:
     url: http://localhost:8083
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true

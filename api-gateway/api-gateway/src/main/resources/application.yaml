@@ -54,8 +54,8 @@ spring:
             - RewritePath=/loans(?<segment>/?.*), /loans$\{segment} # Preserves /loans path for the loan-service
 
         # Card Service Routes (Assuming card-service on port 8005, base path /cards)
-        - id: card_service
-          uri: lb://card-service
+        - id: credit-card-service
+          uri: lb://credit-card-service
           predicates:
             - Path=/cards/**
           filters:
@@ -94,3 +94,14 @@ eureka:
       defaultZone: http://localhost:8761/eureka # Point to your Eureka Server's URL
   instance:
     preferIpAddress: true # Optional: Good for containerized environments
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  metrics:
+   prometheus:
+    metrics:
+      export:
+        enabled: true # Enable Prometheus metrics export

@@ -103,3 +103,13 @@ resilience4j:
     instances:
       userService: # Retry for User Service Feign client
         baseConfig: default # Now this 'default' exists
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  metrics:
+   prometheus:
+    metrics:
+      export:
+        enabled: true # Enable Prometheus metrics export

@@ -28,13 +28,17 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             // Configure authorization rules for HTTP requests
             .authorizeHttpRequests(authorize -> authorize
-                // Allow public access to the /auth/register endpoint (for user profile creation after Keycloak registration)
-                .requestMatchers("/auth/register").permitAll()
-                // Allow access to H2 console for development (if enabled)
-                .requestMatchers("/h2-console/**").permitAll()
-                // All other requests must be authenticated
-                .anyRequest().authenticated()
-            )
+                    // Allow public access to the /auth/register endpoint
+                    .requestMatchers("/auth/register").permitAll()
+                    // Allow H2 console for development (if enabled)
+                    .requestMatchers("/h2-console/**").permitAll()
+                    // Allow Prometheus to scrape metrics without authentication
+                    .requestMatchers("/actuator/prometheus").permitAll() // <--- ADD THIS LINE
+                    // You might also want to expose other actuator endpoints for health checks etc.
+                    // .requestMatchers("/actuator/**").permitAll() // <--- OR THIS FOR ALL ACTUATOR ENDPOINTS
+                    // All other requests must be authenticated
+                    .anyRequest().authenticated()
+                )
             // Configure OAuth2 Resource Server for JWT validation
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt

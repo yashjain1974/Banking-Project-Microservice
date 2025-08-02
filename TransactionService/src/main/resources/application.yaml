@@ -29,6 +29,14 @@ spring:
           jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
           # Alternatively, you can use issuer-uri if you prefer. Spring will discover JWKS from here.
           # issuer-uri: http://localhost:8080/realms/bank-realm
+  kafka:
+    bootstrap-servers: localhost:9092 # Address of your Kafka broker
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # To serialize DTOs to JSON
+      properties:
+        # Important for JSON serialization without adding __TypeId__ header, which simplifies deserialization
+        spring.json.add.type.headers: false
 
 server:
   port: 8001
@@ -55,48 +63,72 @@ eureka:
     preferIpAddress: true # Optional: Good for containerized environments  
 
 # Resilience4j Configuration
+# Resilience4j Configuration
 resilience4j:
   circuitbreaker:
     configs:
-      default: # Default configuration applied to all circuit breakers unless overridden
-        slidingWindowType: COUNT_BASED # Use count-based sliding window
-        slidingWindowSize: 10 # Number of calls in the sliding window
-        failureRateThreshold: 50 # Percentage of failures to open the circuit
-        waitDurationInOpenState: 5s # Time the circuit stays open before half-open state
-        permittedNumberOfCallsInHalfOpenState: 3 # Number of calls allowed in half-open state
-        automaticTransitionFromOpenToHalfOpenEnabled: true # Automatically transition from open to half-open
-        recordExceptions: # Exceptions that count as failures
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
           - org.springframework.web.client.HttpClientErrorException
           - java.io.IOException
           - java.util.concurrent.TimeoutException
-        ignoreExceptions: # Exceptions that do NOT count as failures
-          - com.transaction.exceptions.AccountNotFoundException # Corrected package
-          - com.transaction.exceptions.InsufficientFundsException # Corrected package
+          - org.springframework.kafka.KafkaException # Record Kafka exceptions as failures
+        ignoreExceptions:
+          - com.transaction.exceptions.AccountNotFoundException
+          - com.transaction.exceptions.InsufficientFundsException
     instances:
-      accountService: # Circuit breaker for Account Service Feign client
+      accountService:
         baseConfig: default
-      notificationService: # Circuit breaker for Notification Service Feign client
+      notificationService:
         baseConfig: default
-      loanService: # Circuit breaker for Loan Service Feign client (if you add calls to Loan Service)
+      loanService:
         baseConfig: default
+      # New Circuit Breaker for Kafka publishing
+      kafkaNotificationPublisher: # <--- NEW CIRCUIT BREAKER INSTANCE
+        baseConfig: default
+        # You might want different settings for Kafka, e.g., a higher failureRateThreshold
+        # or shorter waitDurationInOpenState if you expect Kafka to recover quickly.
+        # failureRateThreshold: 70
+        # waitDurationInOpenState: 1s
 
   retry:
     configs:
-      default: # Default retry configuration
-        maxAttempts: 3 # Maximum number of retry attempts
-        waitDuration: 1s # Initial wait duration between retries
-        retryExceptions: # Exceptions that trigger a retry
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
           - java.io.IOException
           - java.util.concurrent.TimeoutException
-          - org.springframework.web.client.HttpServerErrorException # Retry on 5xx errors
-        ignoreExceptions: # Exceptions that do NOT trigger a retry
-          - org.springframework.web.client.HttpClientErrorException # Do not retry on 4xx errors
-          - com.transaction.exceptions.AccountNotFoundException # Corrected package
-          - com.transaction.exceptions.InsufficientFundsException # Corrected package
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.kafka.KafkaException # Retry on Kafka exceptions
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - com.transaction.exceptions.AccountNotFoundException
+          - com.transaction.exceptions.InsufficientFundsException
     instances:
-      accountService: # Retry for Account Service Feign client
+      accountService:
         baseConfig: default
-      notificationService: # Retry for Notification Service Feign client
+      notificationService:
         baseConfig: default
-      loanService: # Retry for Loan Service Feign client
+      loanService:
         baseConfig: default
+      # New Retry for Kafka publishing
+      kafkaNotificationPublisher: # <--- NEW RETRY INSTANCE
+        baseConfig: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  metrics:
+   prometheus:
+    metrics:
+      export:
+        enabled: true # Enable Prometheus metrics export

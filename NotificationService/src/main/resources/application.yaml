@@ -29,6 +29,20 @@ spring:
           jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
           # Alternatively, you can use issuer-uri if you prefer. Spring will discover JWKS from here.
           # issuer-uri: http://localhost:8080/realms/bank-realm
+  kafka:
+    bootstrap-servers: localhost:9092 # Address of your Kafka broker
+    consumer:
+      group-id: notification-service-group # Unique consumer group ID for this service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer # For robust deserialization
+      properties:
+        # Configure JSON deserializer to handle the specific event type
+        spring.json.value.default.type: com.transaction.event.TransactionCompletedEvent # IMPORTANT: Full class name of the event DTO
+        # If you have multiple event types from different topics, you might need to trust all packages:
+        # spring.json.trusted.packages: "*"
+        # For ErrorHandlingDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: latest # Start reading from the latest offset if no previous offset exists
 
 server:
   port: 8002
@@ -53,3 +67,14 @@ eureka:
     fetch-registry: true
   instance:
     preferIpAddress: true # Optional: Good for containerized environments
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  metrics:
+   prometheus:
+    metrics:
+      export:
+        enabled: true # Enable Prometheus metrics export

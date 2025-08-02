@@ -98,3 +98,14 @@ eureka:
 #      # No specific Feign clients in User Service for now.
 #      # Example: notificationService:
 #      #   baseConfig: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  metrics:
+   prometheus:
+    metrics:
+      export:
+        enabled: true # Enable Prometheus metrics export
