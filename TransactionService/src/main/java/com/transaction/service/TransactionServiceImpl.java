@@ -98,12 +98,12 @@ public class TransactionServiceImpl implements TransactionService {
 		return transaction;
 	}
 
-	 public Transaction processTransactionFallback(DepositRequest request, Throwable t) {
-	        System.err.println("Global transaction fallback for deposit: " + t.getMessage());
-	        // Log the failure, perhaps record it in a separate audit log,
-	        // and then re-throw a generic TransactionProcessingException
-	        throw new TransactionProcessingException("Transaction processing failed due to system overload or external dependency issue.", t);
-	    }
+//	 public Transaction processTransactionFallback(DepositRequest request, Throwable t) {
+//	        System.err.println("Global transaction fallback for deposit: " + t.getMessage());
+//	        // Log the failure, perhaps record it in a separate audit log,
+//	        // and then re-throw a generic TransactionProcessingException
+//	        throw new TransactionProcessingException("Transaction processing failed due to system overload or external dependency issue.", t);
+//	    }
 	 
 	@Transactional
 	public Transaction withdraw(WithdrawRequest request) {

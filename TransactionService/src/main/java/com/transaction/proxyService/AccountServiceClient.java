@@ -15,7 +15,7 @@ import com.transaction.dto.AccountDto.AccountStatus;
 import com.transaction.dto.AccountDto.AccountType;
 import com.transaction.dto.DepositRequestDto;
 import com.transaction.dto.WithdrawRequestDto;
-import com.transaction.exceptions.TransactionProcessingException;
+import com.transaction.exceptions.TransactionProcessingException; // Corrected import for custom exception
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -40,19 +40,8 @@ public interface AccountServiceClient {
 	 // Fallback method for getAccountById
 	default AccountDto getAccountByIdFallback(String accountId, Throwable t) {
         System.err.println("Fallback triggered for getAccountById to account " + accountId + ": " + t.getMessage());
-        // Return a mock/dummy AccountDto. You can customize the data as needed for your tests.
-        // For testing "insufficient funds", you might return an account with a low balance.
-        // For "account not found", you might return null or throw a specific exception.
-        // For this example, let's return a default mock account.
-        return new AccountDto(
-                accountId,
-                "mock-user-" + accountId, // Dummy user ID
-                "MOCK" + accountId.substring(Math.max(0, accountId.length() - 5)), // Dummy account number
-                AccountType.SAVINGS,
-                1000.00, // Default balance for mock (adjust for insufficient funds tests)
-                AccountStatus.ACTIVE,
-                LocalDateTime.now()
-        );
+        // Instead of returning a mock, throw an exception to indicate service unavailability
+        throw new TransactionProcessingException("Account service is unavailable or returned an error for account " + accountId, t);
     }
 
  /**
@@ -62,11 +51,14 @@ public interface AccountServiceClient {
   * @return A list of AccountDto objects.
   */
  @GetMapping("/user/{userId}")
+ @CircuitBreaker(name = "accountService", fallbackMethod = "getAccountsByUserIdFallback") // Added CircuitBreaker for consistency
+ @Retry(name = "accountService") // Added Retry for consistency
  List<AccountDto> getAccountsByUserId(@PathVariable("userId") String userId);
  
  default List<AccountDto> getAccountsByUserIdFallback(String userId, Throwable t) {
      System.err.println("Fallback triggered for getAccountsByUserId for user " + userId + ": " + t.getMessage());
-     return Collections.emptyList(); // Or return a list of mock accounts if needed
+     // Throw an exception as the real data cannot be retrieved
+     throw new TransactionProcessingException("Account service is unavailable or returned an error for user " + userId, t);
  }
 
 
@@ -83,16 +75,8 @@ public interface AccountServiceClient {
 //Fallback method for depositFunds
  default AccountDto depositFundsFallback(String accountId, DepositRequestDto requestDto, Throwable t) {
      System.err.println("Fallback triggered for depositFunds to account " + accountId + ": " + t.getMessage());
-     // Simulate successful deposit on a mock account
-     return new AccountDto(
-             accountId,
-             "mock-user-" + accountId,
-             "MOCK" + accountId.substring(Math.max(0, accountId.length() - 5)),
-             AccountType.SAVINGS,
-             1000.00 + requestDto.getAmount(), // Simulate updated balance
-             AccountStatus.ACTIVE,
-             LocalDateTime.now()
-     );
+     // Throw an exception as the deposit could not be processed by the real service
+     throw new TransactionProcessingException("Account service is unavailable or failed to process deposit for account " + accountId, t);
  }
 
  /**
@@ -103,5 +87,14 @@ public interface AccountServiceClient {
   * @return The updated AccountDto after the withdrawal.
   */
  @PostMapping("/{accountId}/withdraw")
+ @CircuitBreaker(name = "accountService", fallbackMethod = "withdrawFundsFallback") // Added CircuitBreaker for consistency
+ @Retry(name = "accountService") // Added Retry for consistency
  AccountDto withdrawFunds(@PathVariable("accountId") String accountId, @RequestBody WithdrawRequestDto requestDto);
+
+ // Fallback method for withdrawFunds
+ default AccountDto withdrawFundsFallback(String accountId, WithdrawRequestDto requestDto, Throwable t) {
+     System.err.println("Fallback triggered for withdrawFunds from account " + accountId + ": " + t.getMessage());
+     // Throw an exception as the withdrawal could not be processed by the real service
+     throw new TransactionProcessingException("Account service is unavailable or failed to process withdrawal from account " + accountId, t);
+ }
 }

@@ -26,10 +26,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
 	}
 
-//	@ExceptionHandler(Exception.class)
-//	public ResponseEntity<?> handleGenericException(Exception ex) {
-//		Map<String, String> error = new HashMap<>();
-//		error.put("error", "An unexpected error occurred");
-//		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-//	}
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<?> handleGenericException(Exception ex) {
+		Map<String, String> error = new HashMap<>();
+		error.put("error", "An unexpected error occurred");
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
 }

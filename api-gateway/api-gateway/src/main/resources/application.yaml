@@ -11,7 +11,7 @@ spring:
           lower-case-service-id: true # Convert service IDs to lowercase for matching
       routes:
         # User Service Routes
-        - id: user_service_auth
+        - id: user_service
           uri: lb://user-service # Load balance across instances of 'user-service' registered in Eureka
           predicates:
             - Path=/auth/** # Matches requests starting with /auth/
@@ -54,8 +54,8 @@ spring:
             - RewritePath=/loans(?<segment>/?.*), /loans$\{segment} # Preserves /loans path for the loan-service
 
         # Card Service Routes (Assuming card-service on port 8005, base path /cards)
-        - id: card_service
-          uri: lb://card-service
+        - id: credit-card-service
+          uri: lb://credit-card-service
           predicates:
             - Path=/cards/**
           filters:
@@ -86,6 +86,8 @@ logging:
       io.github.resilience4j: DEBUG
     reactor:
       netty: DEBUG # For Netty (Webflux server) debugging
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 # Eureka Client Configuration (essential for service discovery)
 eureka:
@@ -94,3 +96,8 @@ eureka:
       defaultZone: http://localhost:8761/eureka # Point to your Eureka Server's URL
   instance:
     preferIpAddress: true # Optional: Good for containerized environments
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+     

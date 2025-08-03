@@ -4,9 +4,9 @@ spring:
   application:
     name: loan-service
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/LOAN_PDB
-    username: LOAN_MS
-    password: loan123
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    username: hr
+    password: hr
     driver-class-name: oracle.jdbc.OracleDriver
   #  cloud:
   #    config:
@@ -44,7 +44,8 @@ logging:
       org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
       org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
-
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 eureka:
   client:
     register-with-eureka: true
@@ -103,3 +104,8 @@ resilience4j:
     instances:
       userService: # Retry for User Service Feign client
         baseConfig: default # Now this 'default' exists
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+     

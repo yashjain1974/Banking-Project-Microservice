@@ -1,4 +1,4 @@
-package com.userMicroservice.config;
+package com.accountMicroservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,17 +10,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration // Marks this class as a source of bean definitions
+@Configuration
 @EnableWebSecurity // Enables Spring Security's web security support
 @EnableMethodSecurity(prePostEnabled = true) // Enables method-level security annotations like @PreAuthorize
 public class SecurityConfig {
 
-    /**
-     * Configures the security filter chain for HTTP requests.
-     * @param http HttpSecurity object to configure security settings.
-     * @return The built SecurityFilterChain.
-     * @throws Exception if an error occurs during configuration.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -28,11 +22,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             // Configure authorization rules for HTTP requests
             .authorizeHttpRequests(authorize -> authorize
-                // Allow public access to the /auth/register endpoint (for user profile creation after Keycloak registration)
-                .requestMatchers("/auth/register").permitAll()
-                // Allow access to H2 console for development (if enabled)
+                // Allow H2 console for development (if exposed directly, which is not recommended for prod)
                 .requestMatchers("/h2-console/**").permitAll()
-                // All other requests must be authenticated
+                // All other requests must be authenticated.
+                // This is the crucial line that ensures all other endpoints require a valid JWT.
                 .anyRequest().authenticated()
             )
             // Configure OAuth2 Resource Server for JWT validation
@@ -56,8 +49,16 @@ public class SecurityConfig {
      */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(new KeycloakRealmRoleConverter());
-        return converter;
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Set the claim name where Keycloak stores the roles.
+        // For realm roles, it's commonly "realm_access.roles".
+        // For client roles, it might be "resource_access.<client-id>.roles".
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("realm_access.roles"); // Or "resource_access.<client-id>.roles"
+        // Add a prefix to the extracted roles (e.g., "ADMIN" becomes "ROLE_ADMIN")
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
     }
 }
