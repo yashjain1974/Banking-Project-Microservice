@@ -1,11 +1,12 @@
 package com.bank.loan.mapper;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.bank.loan.dto.LoanRequestDto;
 import com.bank.loan.dto.LoanResponseDto;
 import com.bank.loan.entity.Loan;
+import com.bank.loan.entity.Loan.LoanStatus;
 
 public class LoanMapper {
 	public static Loan toEntity(LoanRequestDto dto) {
@@ -16,8 +17,8 @@ public class LoanMapper {
 		loan.setAmount(dto.getAmount());
 		loan.setTenureInMonths(dto.getTenureInMonths());
 		loan.setInterestRate(dto.getInterestRate());
-		loan.setStatus("PENDING");
-		loan.setApplicationDate(LocalDate.now());
+		loan.setStatus(LoanStatus.PENDING);
+		loan.setApplicationDate(LocalDateTime.now());
 		return loan;
 	}
 

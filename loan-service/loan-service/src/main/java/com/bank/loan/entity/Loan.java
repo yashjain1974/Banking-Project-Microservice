@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.bank.loan.enums.LoanType;
 
@@ -34,8 +35,15 @@ public class Loan {
 	private Double interestRate;
 
 	@Column(name = "status", nullable = false)
-	private String status;
+	private LoanStatus status;
 
 	@Column(name = "application_date", nullable = false)
-	private LocalDate applicationDate;
+	private LocalDateTime applicationDate;
+	
+	public enum LoanStatus {
+	    APPROVED,
+	    PENDING,
+	    REJECTED
+	}
+
 }

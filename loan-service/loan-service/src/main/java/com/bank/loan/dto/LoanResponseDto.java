@@ -4,7 +4,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import com.bank.loan.entity.Loan.LoanStatus;
 import com.bank.loan.enums.LoanType;
 
 @Data
@@ -15,6 +17,6 @@ public class LoanResponseDto {
 	private BigDecimal amount;
 	private Integer tenureInMonths;
 	private Double interestRate;
-	private String status;
-	private LocalDate applicationDate;
+	private LoanStatus status;
+	private LocalDateTime applicationDate;
 }

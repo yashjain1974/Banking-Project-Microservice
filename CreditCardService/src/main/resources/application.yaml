@@ -1,14 +1,10 @@
 spring:
   application:
-    name: credit-card-service
-
-  profiles:
-    active: dev
-
+    name: credit-card-service # Must match FeignClient name in API Gateway
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/CARD_PDB
-    username: CARD_MS
-    password: card123
+    url: jdbc:oracle:thin:@localhost:1521/CARD_PDB # Your database URL
+    username: CARD_MS # Your database username
+    password: card123 # Your database password
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:
@@ -19,82 +15,102 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.OracleDialect
-eureka:
- client:
-  serviceUrl:
-    defaultZone: http://localhost:8761/eureka/ # Point to your Eureka Server's URL
-  register-with-eureka: true
-  fetch-registry: true
 
-#  kafka:
-#    bootstrap-servers: localhost:9092
-#    consumer:
-#      group-id: credit-card-consumer-group
-#      auto-offset-reset: earliest
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#    producer:
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  security: # <--- ADD THIS SECTION FOR SECURITY CONFIGURATION
+    oauth2:
+      resourceserver:
+        jwt:
+          # This is the URL where Keycloak exposes its public keys (JWKS endpoint).
+          # Spring Security will use this to validate the signature of incoming JWTs.
+          # Replace 8080 with your Keycloak port, bank-realm with your realm name.
+          jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
+          # Alternatively, you can use issuer-uri if you prefer. Spring will discover JWKS from here.
+          # issuer-uri: http://localhost:8080/realms/bank-realm
 
-#  config:
-#    import: "optional:configserver:http://localhost:8888"
-
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          jwk-set-uri: http://localhost:8080/oauth2/jwks
-
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka
-#    register-with-eureka: true
-#    fetch-registry: true
-
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: "*"
-#  tracing:
-#    sampling:
-#      probability: 1.0
-#  prometheus:
-#    metrics:
-#      export:
-#        enabled: true
+server:
+  port: 8005 # Card Service typically runs on port 8005
 
 logging:
   level:
-    root: INFO
-    org.springframework.web: DEBUG
-    com.creditcardservice: DEBUG
-  pattern:
-    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+    org:
+      springframework:
+        web: DEBUG
+      hibernate: ERROR
+      io.github.resilience4j: DEBUG # Enable Resilience4j logging
+      org.springframework.security: DEBUG # Enable detailed Spring Security logging
+      org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
+      org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
 
-server:
-  port: 8005
-
-## Zipkin tracing config
-#spring.zipkin.base-url: http://localhost:9411
-#spring.sleuth.sampler.probability: 1.0
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    preferIpAddress: true
 
 resilience4j:
   circuitbreaker:
+    configs:
+      default: # Default configuration for all circuit breakers
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignoreExceptions:
+          - com.creditcardservice.exceptions.ResourceNotFoundException
+          - com.creditcardservice.exceptions.CardServiceException
     instances:
       transactionService:
-        registerHealthIndicator: true
-        slidingWindowSize: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
+        baseConfig: default
+      accountService:
+        baseConfig: default
+      userService:
+        baseConfig: default
 
-transaction:
-  service:
-    url: http://localhost:8083
+  retry:
+    configs:
+      default: # Default retry configuration
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+        ignoreExceptions:
+          - com.creditcardservice.exceptions.ResourceNotFoundException
+          - com.creditcardservice.exceptions.CardServiceException
+    instances:
+      transactionService:
+        baseConfig: default
+      accountService:
+        baseConfig: default
+      userService:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+    instances:
+      transactionService:
+        baseConfig: default
+      accountService:
+        baseConfig: default
+      userService:
+        baseConfig: default
+
+# Prometheus and Actuator Management Configuration
 management:
-  tracing:
+  tracing: # Existing tracing configuration for Sleuth/Micrometer
     sampling:
       probability: 1.0

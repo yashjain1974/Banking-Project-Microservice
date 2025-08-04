@@ -1,21 +1,33 @@
 package com.creditcardservice.service.impl;
 
-import com.creditcardservice.dao.CreditCardRepository;
-import com.creditcardservice.dto.*;
-import com.creditcardservice.exceptions.ResourceNotFoundException;
-import com.creditcardservice.model.CardStatus;
-import com.creditcardservice.model.CreditCard;
-import com.creditcardservice.proxyservice.TransactionServiceProxy;
-import com.creditcardservice.service.CreditCardService;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Added for transactional methods
+
+import com.creditcardservice.dao.CreditCardRepository;
+import com.creditcardservice.dto.AccountDto;
+import com.creditcardservice.dto.CreditCardRequestDTO;
+import com.creditcardservice.dto.CreditCardResponseDTO;
+import com.creditcardservice.dto.TransactionDTO;
+import com.creditcardservice.dto.UserDto;
+import com.creditcardservice.exceptions.CardServiceException; // NEW: Custom exception for Card Service
+import com.creditcardservice.exceptions.ResourceNotFoundException; // Assuming this is your base exception
+import com.creditcardservice.model.AccountStatus;
+import com.creditcardservice.model.CardStatus;
+import com.creditcardservice.model.CreditCard;
+import com.creditcardservice.model.KycStatus;
+import com.creditcardservice.proxyservice.AccountServiceClient; // NEW: Import AccountServiceClient
+import com.creditcardservice.proxyservice.TransactionServiceProxy;
+import com.creditcardservice.proxyservice.UserServiceClient; // NEW: Import UserServiceClient
+import com.creditcardservice.service.CreditCardService;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @Service
 public class CreditCardServiceImpl implements CreditCardService {
@@ -23,8 +35,40 @@ public class CreditCardServiceImpl implements CreditCardService {
     @Autowired
     private CreditCardRepository creditCardRepository;
 
+    @Autowired
+    private TransactionServiceProxy transactionServiceProxy;
+
+    @Autowired // NEW: Inject AccountServiceClient
+    private AccountServiceClient accountServiceClient;
+
+    @Autowired // NEW: Inject UserServiceClient
+    private UserServiceClient userServiceClient;
+
     @Override
+    @Transactional // Ensure atomicity for card issuance
     public CreditCardResponseDTO issueCard(CreditCardRequestDTO requestDTO) {
+        // 1. Validate User existence via User Service
+        UserDto user = userServiceClient.getUserById(requestDTO.getUserId());
+        if (user == null) {
+            throw new CardServiceException("Card issuance denied: User not found with ID: " + requestDTO.getUserId());
+        }
+        if (user.getKycStatus() != KycStatus.VERIFIED) { // Assuming KycStatus is accessible from UserDto
+            throw new CardServiceException("Card issuance denied: User KYC status is " + user.getKycStatus() + ". Must be VERIFIED.");
+        }
+
+        // 2. Validate Account existence and status via Account Service
+        AccountDto account = accountServiceClient.getAccountById(requestDTO.getAccountId());
+        if (account == null) {
+            throw new CardServiceException("Card issuance denied: Account not found with ID: " + requestDTO.getAccountId());
+        }
+        if (!account.getUserId().equals(requestDTO.getUserId())) {
+            throw new CardServiceException("Card issuance denied: Account ID " + requestDTO.getAccountId() + " does not belong to user " + requestDTO.getUserId() + ".");
+        }
+        if (account.getStatus() != AccountStatus.ACTIVE) { // Assuming AccountStatus is accessible from AccountDto
+            throw new CardServiceException("Card issuance denied: Account ID " + requestDTO.getAccountId() + " is " + account.getStatus() + ". Must be ACTIVE.");
+        }
+
+        // 3. Proceed with card creation
         CreditCard card = new CreditCard();
         card.setUserId(requestDTO.getUserId());
         card.setAccountId(requestDTO.getAccountId());
@@ -119,11 +163,16 @@ public class CreditCardServiceImpl implements CreditCardService {
         return mapToResponseDTO(creditCardRepository.save(card));
     }
 
+    @Override
+    @CircuitBreaker(name = "transactionService", fallbackMethod = "getTransactionsFallback")
+    public List<TransactionDTO> getTransactionsByCardId(String cardId) {
+        return transactionServiceProxy.getTransactionsByCardId(cardId);
+    }
 
-
-    // -------------------------
-    // Mapping Utility
-    // -------------------------
+    public List<TransactionDTO> getTransactionsFallback(String cardId, Throwable t) {
+        System.out.println("Fallback triggered due to: " + t.getMessage());
+        return Collections.emptyList();
+    }
 
     private CreditCardResponseDTO mapToResponseDTO(CreditCard card) {
         CreditCardResponseDTO dto = new CreditCardResponseDTO();
@@ -139,133 +188,4 @@ public class CreditCardServiceImpl implements CreditCardService {
         dto.setCreatedAt(card.getCreatedAt());
         return dto;
     }
-
-    @Autowired
-    private TransactionServiceProxy transactionServiceProxy;
-
-    @Override
-    @CircuitBreaker(name = "transactionService", fallbackMethod = "getTransactionsFallback")
-    public List<TransactionDTO> getTransactionsByCardId(String cardId) {
-        return transactionServiceProxy.getTransactionsByCardId(cardId);
-    }
-
-    public List<TransactionDTO> getTransactionsFallback(String cardId, Throwable t) {
-        System.out.println("Fallback triggered due to: " + t.getMessage());
-        return Collections.emptyList();
-    }
-
 }
-
-
-//package com.creditcardservice.service.impl;
-//
-//import com.creditcardservice.dao.CreditCardRepository;
-//import com.creditcardservice.dto.*;
-//import com.creditcardservice.exceptions.ResourceNotFoundException;
-//import com.creditcardservice.model.CardStatus;
-//import com.creditcardservice.model.CreditCard;
-//import com.creditcardservice.proxyservice.TransactionServiceProxy;
-//import com.creditcardservice.service.CreditCardService;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
-//
-//import java.time.LocalDate;
-//import java.time.LocalDateTime;
-//import java.util.List;
-//import java.util.UUID;
-//import java.util.stream.Collectors;
-//
-//@Service
-//public class CreditCardServiceImpl implements CreditCardService {
-//
-//    @Autowired
-//    private CreditCardRepository creditCardRepository;
-//
-//    @Autowired
-//    private TransactionServiceProxy transactionProxy;
-//
-//    @Override
-//    public CreditCardResponseDTO issueCard(CreditCardRequestDTO requestDTO) {
-//        CreditCard card = new CreditCard();
-//        card.setCardId(UUID.randomUUID().toString());
-//        card.setUserId(requestDTO.getUserId());
-//        card.setAccountId(requestDTO.getAccountId());
-//        card.setCardNumber(generateCardNumber());
-//        card.setCardType(requestDTO.getCardType());
-//        card.setStatus(CardStatus.ACTIVE);
-//        card.setIssueDate(LocalDate.now());
-//        card.setExpiryDate(LocalDate.now().plusYears(5));
-//        card.setTransactionLimit(requestDTO.getTransactionLimit());
-//        card.setCreatedAt(LocalDateTime.now());
-//
-//        return mapToResponseDTO(creditCardRepository.save(card));
-//    }
-//
-//    @Override
-//    public List<CreditCardResponseDTO> getCardsByUserId(String userId) {
-//        return creditCardRepository.findByUserId(userId)
-//                .stream()
-//                .map(this::mapToResponseDTO)
-//                .collect(Collectors.toList());
-//    }
-//
-//    @Override
-//    public CreditCardResponseDTO getCardById(String cardId) {
-//        CreditCard card = creditCardRepository.findById(cardId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
-//        return mapToResponseDTO(card);
-//    }
-//
-//    @Override
-//    public CreditCardResponseDTO blockCard(String cardId) {
-//        CreditCard card = getEntity(cardId);
-//        card.setStatus(CardStatus.BLOCKED);
-//        return mapToResponseDTO(creditCardRepository.save(card));
-//    }
-//
-//    @Override
-//    public CreditCardResponseDTO unblockCard(String cardId) {
-//        CreditCard card = getEntity(cardId);
-//        card.setStatus(CardStatus.ACTIVE);
-//        return mapToResponseDTO(creditCardRepository.save(card));
-//    }
-//
-//    @Override
-//    public CreditCardResponseDTO updateTransactionLimit(String cardId, Double newLimit) {
-//        CreditCard card = getEntity(cardId);
-//        card.setTransactionLimit(newLimit);
-//        return mapToResponseDTO(creditCardRepository.save(card));
-//    }
-//
-//    @Override
-//    public List<TransactionDTO> getTransactionsByCardId(String cardId) {
-//        // proxy call to transaction microservice
-//        return transactionProxy.getTransactionsByCardId(cardId);
-//    }
-//
-//    // ========== Utility Methods ==========
-//
-//    private CreditCard getEntity(String cardId) {
-//        return creditCardRepository.findById(cardId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
-//    }
-//
-//    private CreditCardResponseDTO mapToResponseDTO(CreditCard card) {
-//        CreditCardResponseDTO dto = new CreditCardResponseDTO();
-//        dto.setCardId(card.getCardId());
-//        dto.setUserId(card.getUserId());
-//        dto.setAccountId(card.getAccountId());
-//        dto.setCardNumber(card.getCardNumber());
-//        dto.setCardType(card.getCardType());
-//        dto.setStatus(card.getStatus());
-//        dto.setIssueDate(card.getIssueDate());
-//        dto.setExpiryDate(card.getExpiryDate());
-//        dto.setTransactionLimit(card.getTransactionLimit());
-//        dto.setCreatedAt(card.getCreatedAt());
-//        return dto;
-//    }
-//
-//    private String generateCardNumber() {
-//        return "4000" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-//    }
-//}

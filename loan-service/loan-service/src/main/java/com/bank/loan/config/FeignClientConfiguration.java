@@ -14,26 +14,22 @@ public class FeignClientConfiguration {
 
     /**
      * Creates a RequestInterceptor that adds the Authorization header to outgoing Feign requests.
-     * This ensures that the JWT from the incoming request (from the API Gateway) is forwarded
-     * to downstream microservices (like the User Service).
+     * This ensures that the JWT from the incoming request is forwarded to downstream microservices.
+     * This bean is specifically for Feign client configuration.
      *
      * @return A RequestInterceptor bean.
      */
     @Bean
     public RequestInterceptor requestInterceptor() {
         return requestTemplate -> {
-            // Get current request attributes (if available, meaning it's an HTTP request context)
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
-            // If attributes are present, it means there's an active HTTP request
             Optional.ofNullable(attributes)
                 .map(ServletRequestAttributes::getRequest)
-                .map(request -> request.getHeader("Authorization")) // Get the Authorization header from the incoming request
-                .filter(authHeader -> authHeader != null && authHeader.startsWith("Bearer ")) // Ensure it's a Bearer token
+                .map(request -> request.getHeader("Authorization"))
+                .filter(authHeader -> authHeader != null && authHeader.startsWith("Bearer "))
                 .ifPresent(authHeader -> {
-                    // Add the Authorization header to the outgoing Feign request
                     requestTemplate.header("Authorization", authHeader);
-                    System.out.println("Forwarding Authorization header: " + authHeader.substring(0, Math.min(authHeader.length(), 30)) + "..."); // Log for debugging
+                    System.out.println("Forwarding Authorization header from Loan Service Feign: " + authHeader.substring(0, Math.min(authHeader.length(), 30)) + "...");
                 });
         };
     }

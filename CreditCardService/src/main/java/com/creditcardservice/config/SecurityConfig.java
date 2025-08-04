@@ -1,4 +1,6 @@
-package com.bank.loan.config;
+package com.creditcardservice.config;
+
+import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,9 +11,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-// REMOVE THIS IMPORT: import feign.RequestInterceptor;
-// REMOVE THIS IMPORT: import org.springframework.web.context.request.RequestContextHolder;
-// REMOVE THIS IMPORT: import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import feign.RequestInterceptor; // Import Feign RequestInterceptor
 
 @Configuration
 @EnableWebSecurity
@@ -49,8 +52,10 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
-    // REMOVE THE ENTIRE requestInterceptor BEAN METHOD FROM HERE
-    /*
+    /**
+     * Feign Request Interceptor to forward Authorization header.
+     * This ensures JWTs are passed to downstream services (User, Account, Transaction).
+     */
     @Bean
     public RequestInterceptor requestInterceptor() {
         return requestTemplate -> {
@@ -61,9 +66,8 @@ public class SecurityConfig {
                 .filter(authHeader -> authHeader != null && authHeader.startsWith("Bearer "))
                 .ifPresent(authHeader -> {
                     requestTemplate.header("Authorization", authHeader);
-                    System.out.println("Forwarding Authorization header from Loan Service: " + authHeader.substring(0, Math.min(authHeader.length(), 30)) + "...");
+                    System.out.println("Forwarding Authorization header from Card Service: " + authHeader.substring(0, Math.min(authHeader.length(), 30)) + "...");
                 });
         };
     }
-    */
 }

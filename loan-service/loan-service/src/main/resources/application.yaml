@@ -46,6 +46,7 @@ logging:
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
 eureka:
   client:
     register-with-eureka: true
@@ -92,19 +93,23 @@ resilience4j:
   retry: # <--- ADDED 'retry' section
     configs:
       default: # <--- DEFINED 'default' retry configuration
-        maxAttempts: 3
-        waitDuration: 1s
+        maxAttempts: 3 # Maximum number of retry attempts
+        waitDuration: 1s # Initial wait duration between retries
         retryExceptions:
+          - org.springframework.web.client.HttpClientErrorException
           - java.io.IOException
           - java.util.concurrent.TimeoutException
-          - org.springframework.web.client.HttpServerErrorException
         ignoreExceptions:
-          - org.springframework.web.client.HttpClientErrorException
           - com.bank.loan.exception.LoanNotFoundException # Corrected package
     instances:
       userService: # Retry for User Service Feign client
         baseConfig: default # Now this 'default' exists
-management:
-  tracing:
+
+management: # <--- ADDED/UPDATED SECTION FOR ACTUATOR/PROMETHEUS
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  tracing: # Existing tracing configuration for Sleuth/Micrometer
     sampling:
       probability: 1.0
