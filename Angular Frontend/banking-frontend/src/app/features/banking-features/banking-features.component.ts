@@ -13,8 +13,11 @@ import { RouterLink } from '@angular/router'; // Import RouterLink
   <p>Here you can manage your accounts, make transactions, apply for loans, and more.</p>
   
   <div class="feature-links">
-    <a routerLink="/accounts" class="feature-button">Manage Accounts</a> <!-- Updated routerLink -->
-    <a routerLink="/transactions" class="feature-button">Make Transactions</a>
+    <a routerLink="/accounts" class="feature-button">Manage Accounts</a>
+    <a routerLink="/transactions/history" class="feature-button">View Transactions</a> <!-- Updated routerLink -->
+    <a routerLink="/transactions/deposit" class="feature-button">Deposit Funds</a> <!-- New Button -->
+    <a routerLink="/transactions/withdraw" class="feature-button">Withdraw Funds</a> <!-- New Button -->
+    <a routerLink="/transactions/transfer" class="feature-button">Transfer Funds</a> <!-- New Button -->
     <a routerLink="/loans" class="feature-button">Apply for Loans</a>
     <a routerLink="/cards" class="feature-button">Manage Cards</a>
   </div>

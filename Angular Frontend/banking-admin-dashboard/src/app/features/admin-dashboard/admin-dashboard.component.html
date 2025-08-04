@@ -1,43 +1,49 @@
 <div class="admin-dashboard-container">
-    <h2>Admin Dashboard - KYC Verification</h2>
-    <button (click)="logout()" class="logout-button">Logout</button>
-    <button (click)="loadPendingUsers()" class="refresh-button">Refresh List</button>
+  <h2>Admin Dashboard - KYC Verification</h2>
+  <button (click)="logout()" class="logout-button">Logout</button>
+  <button (click)="loadPendingUsers()" class="refresh-button">Refresh List</button>
 
-    <div *ngIf="loading" class="loading-message">Loading pending applications...</div>
+  <div class="admin-feature-links"> <!-- New container for feature links -->
+    <a routerLink="/loan-management" class="feature-button">Manage Loans</a> <!-- New button -->
+    <a routerLink="/admin-dashboard" class="feature-button">Manage KYC</a> <!-- Existing KYC link -->
+  </div>
 
-    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+  <div *ngIf="loading" class="loading-message">Loading pending applications...</div>
 
-    <div *ngIf="!loading && pendingUsers.length > 0" class="user-list">
-        <h3>Pending KYC Applications ({{ pendingUsers.length }})</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Full Name</th>
-                    <th>Current Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let user of pendingUsers">
-                    <td>{{ user.userId }}</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.firstName }} {{ user.lastName }}</td>
-                    <td>{{ user.kycStatus }}</td>
-                    <td>
-                        <button (click)="approveKyc(user.userId)" class="action-button approve">Approve</button>
-                        <button (click)="rejectKyc(user.userId)" class="action-button reject">Reject</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
 
-    <div *ngIf="!loading && pendingUsers.length === 0 && !successMessage" class="no-pending-message">
-        <p>No pending KYC applications at the moment.</p>
-    </div>
+  <div *ngIf="!loading && pendingUsers.length > 0" class="user-list">
+    <h3>Pending KYC Applications ({{ pendingUsers.length }})</h3>
+    <p class="instruction-message">Click "Manage KYC" to see all users and approve/reject their KYC.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th>Current Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of pendingUsers">
+          <td>{{ user.userId | slice:0:8 }}...</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td><span [ngClass]="getKycStatusClass(user.kycStatus)">{{ user.kycStatus }}</span></td>
+          <td>
+            <button (click)="approveKyc(user.userId)" class="action-button approve">Approve</button>
+            <button (click)="rejectKyc(user.userId)" class="action-button reject">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && pendingUsers.length === 0 && !successMessage" class="no-pending-message">
+    <p>No pending KYC applications at the moment.</p>
+  </div>
 </div>

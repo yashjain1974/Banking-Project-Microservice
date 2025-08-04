@@ -31,7 +31,7 @@ public class Loan {
 	@Column(name = "tenure_in_months", nullable = false)
 	private Integer tenureInMonths;
 
-	@Column(name = "interest_rate", nullable = false)
+	@Column(name = "interest_rate", nullable = false,columnDefinition = "NUMBER(5,2)")
 	private Double interestRate;
 
 	@Column(name = "status", nullable = false)

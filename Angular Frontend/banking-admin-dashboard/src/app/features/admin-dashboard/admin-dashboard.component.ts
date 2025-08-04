@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http'; // For making HTTP requests
 import { environment } from '../../../environments/environment'; // Your environment file
 import { AuthService } from '../../core/services/auth.service'; // Auth service
 import { KycStatus, UserRole } from '../../shared/models/user.model';
+import { RouterLink } from '@angular/router';
 
 
 // Define a DTO for user profiles expected from User Microservice
@@ -19,10 +20,10 @@ interface UserProfile {
 }
 
 @Component({
-  selector: 'app-admin-dashboard',
-  standalone: true,
-    imports: [CommonModule],
-  templateUrl: './admin-dashboard.component.html',
+    selector: 'app-admin-dashboard',
+    standalone: true,
+    imports: [CommonModule, RouterLink],
+    templateUrl: './admin-dashboard.component.html',
     styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
@@ -92,5 +93,13 @@ export class AdminDashboardComponent implements OnInit {
 
     logout(): void {
         this.authService.logout();
+    }
+    getKycStatusClass(status: string): string {
+        switch (status) {
+            case 'PENDING': return 'status-pending';
+            case 'APPROVED': return 'status-approved';
+            case 'REJECTED': return 'status-rejected';
+            default: return '';
+        }
     }
 }

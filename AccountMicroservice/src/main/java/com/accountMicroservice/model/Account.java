@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,7 @@ public class Account {
     @Column(name = "user_id", nullable = false)
     private String userId; // Foreign key referencing the User Service's User ID
 
+    @Pattern(regexp = "^[0-9]+$", message = "Account number must be a positive numeric string")
     @Column(name = "account_number", unique = true, nullable = false)
     private String accountNumber; // Unique identifier for the account (e.g., 1234567890)
 

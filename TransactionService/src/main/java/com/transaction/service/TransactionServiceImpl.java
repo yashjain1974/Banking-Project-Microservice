@@ -15,8 +15,8 @@ import com.transaction.dto.AccountDto;
 import com.transaction.dto.DepositRequest;
 import com.transaction.dto.DepositRequestDto;
 import com.transaction.dto.NotificationRequestDto;
-import com.transaction.dto.TransferRequest;
-import com.transaction.dto.UserDto; // Import UserDto for KYC check
+import com.transaction.dto.TransferRequest; // Updated DTO
+import com.transaction.dto.UserDto;
 import com.transaction.dto.WithdrawRequest;
 import com.transaction.dto.WithdrawRequestDto;
 import com.transaction.event.TransactionCompletedEvent;
@@ -31,7 +31,7 @@ import com.transaction.model.TransactionType;
 import com.transaction.proxyService.AccountServiceClient;
 import com.transaction.proxyService.LoanServiceClient;
 import com.transaction.proxyService.NotificationServiceClient;
-import com.transaction.proxyService.UserServiceClient; // Import UserServiceClient
+import com.transaction.proxyService.UserServiceClient;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
@@ -94,7 +94,6 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new AccountNotFoundException("Target account not found with ID: " + request.getAccountId());
             }
 
-            // Perform KYC check for the user associated with the target account
             checkKycStatus(targetAccount.getUserId());
 
             DepositRequestDto depositRequestDto = new DepositRequestDto(transaction.getTransactionId(), request.getAmount());
@@ -118,7 +117,7 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw new TransactionProcessingException("Deposit failed due to Account Service error: " + e.getResponseBodyAsString(), e);
-        } catch (AccountNotFoundException | UnauthorizedUserException e) { // <--- THIS CATCH BLOCK
+        } catch (AccountNotFoundException | UnauthorizedUserException e) {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw e;
@@ -151,7 +150,6 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new AccountNotFoundException("Source account not found with ID: " + request.getAccountId());
             }
 
-            // Perform KYC check for the user associated with the source account
             checkKycStatus(sourceAccount.getUserId());
 
             if (sourceAccount.getBalance() < request.getAmount()) {
@@ -179,7 +177,7 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw new TransactionProcessingException("Withdrawal failed due to Account Service error: " + e.getResponseBodyAsString(), e);
-        } catch (AccountNotFoundException | InsufficientFundsException | InvalidTransactionException | UnauthorizedUserException e) { // <--- THIS CATCH BLOCK
+        } catch (AccountNotFoundException | InsufficientFundsException | InvalidTransactionException | UnauthorizedUserException e) {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw e;
@@ -193,13 +191,15 @@ public class TransactionServiceImpl implements TransactionService {
 
     /**
      * Processes a fund transfer transaction between two accounts.
+     * Updated to use account numbers.
      */
     @Override
     @Transactional
     public Transaction transfer(TransferRequest request) {
         Transaction transaction = new Transaction();
-        transaction.setFromAccountId(request.getFromAccountId());
-        transaction.setToAccountId(request.getToAccountId());
+        // Set initial account IDs to null, they will be resolved
+        transaction.setFromAccountId(null);
+        transaction.setToAccountId(null);
         transaction.setAmount(request.getAmount());
         transaction.setType(TransactionType.TRANSFER);
         transaction.setStatus(TransactionStatus.PENDING);
@@ -207,33 +207,39 @@ public class TransactionServiceImpl implements TransactionService {
         transaction = transactionRepository.save(transaction);
 
         try {
-            AccountDto sourceAccount = accountServiceClient.getAccountById(request.getFromAccountId());
-            AccountDto targetAccount = accountServiceClient.getAccountById(request.getToAccountId());
+            // Resolve account numbers to account IDs
+            AccountDto sourceAccount = accountServiceClient.getAccountByAccountNumber(request.getFromAccountNumber());
+            AccountDto targetAccount = accountServiceClient.getAccountByAccountNumber(request.getToAccountNumber());
 
             if (sourceAccount == null) {
-                throw new AccountNotFoundException("Source account not found with ID: " + request.getFromAccountId());
+                throw new AccountNotFoundException("Source account not found with number: " + request.getFromAccountNumber());
             }
             if (targetAccount == null) {
-                throw new AccountNotFoundException("Target account not found with ID: " + request.getToAccountId());
+                throw new AccountNotFoundException("Target account not found with number: " + request.getToAccountNumber());
             }
+
+            // Set resolved account IDs to the transaction entity
+            transaction.setFromAccountId(sourceAccount.getAccountId());
+            transaction.setToAccountId(targetAccount.getAccountId());
+            transaction = transactionRepository.save(transaction); // Save again with resolved IDs
 
             // Perform KYC check for both source and target users
             checkKycStatus(sourceAccount.getUserId());
             checkKycStatus(targetAccount.getUserId());
 
             if (sourceAccount.getBalance() < request.getAmount()) {
-                throw new InsufficientFundsException("Insufficient funds in source account: " + request.getFromAccountId());
+                throw new InsufficientFundsException("Insufficient funds in source account: " + request.getFromAccountNumber());
             }
 
-            if (request.getFromAccountId().equals(request.getToAccountId())) {
+            if (sourceAccount.getAccountId().equals(targetAccount.getAccountId())) { // Compare resolved IDs
                 throw new InvalidTransactionException("Cannot transfer funds to the same account.");
             }
 
             WithdrawRequestDto withdrawRequestDto = new WithdrawRequestDto(transaction.getTransactionId(), request.getAmount());
-            accountServiceClient.withdrawFunds(request.getFromAccountId(), withdrawRequestDto);
+            accountServiceClient.withdrawFunds(sourceAccount.getAccountId(), withdrawRequestDto); // Use resolved ID
 
             DepositRequestDto depositRequestDto = new DepositRequestDto(transaction.getTransactionId(), request.getAmount());
-            accountServiceClient.depositFunds(request.getToAccountId(), depositRequestDto);
+            accountServiceClient.depositFunds(targetAccount.getAccountId(), depositRequestDto); // Use resolved ID
 
             transaction.setStatus(TransactionStatus.SUCCESS);
             transaction = transactionRepository.save(transaction);

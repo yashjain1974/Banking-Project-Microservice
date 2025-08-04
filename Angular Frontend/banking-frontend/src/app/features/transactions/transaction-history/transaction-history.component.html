@@ -1,0 +1,51 @@
+<div class="transaction-history-container">
+    <h2>Transaction History</h2>
+
+    <div *ngIf="loading" class="loading-message">Loading accounts and history...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div class="account-selection-section" *ngIf="!loading && accounts.length > 0">
+        <label for="accountSelect">Select Account:</label>
+        <select id="accountSelect" name="accountSelect" [(ngModel)]="selectedAccountId" (change)="onAccountChange()">
+            <option *ngFor="let account of accounts" [value]="account.accountId">
+                {{ account.accountNumber }} ({{ account.accountType }} - {{ account.balance |
+                currency:'INR':'symbol':'1.2-2' }})
+            </option>
+        </select>
+    </div>
+
+    <div *ngIf="!loading && selectedAccountId && transactions.length > 0" class="transaction-list">
+        <h3>Transactions for {{ getSelectedAccountNumber() }}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>From Account</th>
+                    <th>To Account</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let transaction of transactions">
+                    <td>{{ transaction.transactionId | slice:0:8 }}...</td>
+                    <td><span [ngClass]="getTransactionTypeClass(transaction.type)">{{ transaction.type }}</span></td>
+                    <td>{{ transaction.amount | currency:'INR':'symbol':'1.2-2' }}</td>
+                    <td>{{ getAccountDisplayName(transaction.fromAccountId) }}</td>
+                    <td>{{ getAccountDisplayName(transaction.toAccountId) }}</td>
+                    <td>{{ transaction.transactionDate | date:'short' }}</td>
+                    <td><span [ngClass]="getTransactionStatusClass(transaction.status)">{{ transaction.status }}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && accounts.length === 0" class="no-accounts-message">
+        <p>You need to create an account first to view transaction history.</p>
+        <a routerLink="/accounts" class="create-account-link">Go to Accounts</a>
+    </div>
+</div>

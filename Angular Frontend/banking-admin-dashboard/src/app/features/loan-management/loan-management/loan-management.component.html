@@ -1,0 +1,62 @@
+<div class="loan-management-container">
+    <h2>Loan Application Management</h2>
+    <button (click)="loadLoans()" class="refresh-button">Refresh Loans</button>
+
+    <div *ngIf="loading" class="loading-message">Loading loan applications...</div>
+
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div class="loan-list-section" *ngIf="!loading && allLoans.length > 0">
+        <h3>All Loan Applications ({{ allLoans.length }})</h3>
+        <p *ngIf="pendingLoans.length > 0" class="pending-count">
+            <span class="highlight-pending">{{ pendingLoans.length }}</span> pending applications.
+        </p>
+        <p *ngIf="pendingLoans.length === 0" class="no-pending-message">
+            No pending loan applications at the moment.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Loan ID</th>
+                    <th>User ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Tenure (Months)</th>
+                    <th>Interest Rate</th>
+                    <th>Application Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let loan of allLoans">
+                    <td>{{ loan.loanId | slice:0:8 }}...</td>
+                    <td>{{ loan.userId | slice:0:8 }}...</td>
+                    <td>{{ loan.loanType }}</td>
+                    <td>{{ loan.amount | currency:'INR':'symbol':'1.2-2' }}</td>
+                    <td>{{ loan.tenureMonths }}</td>
+                    <td>{{ loan.interestRate | number:'1.2-2' }}%</td>
+                    <td>{{ loan.applicationDate | date:'short' }}</td>
+                    <td><span [ngClass]="getLoanStatusClass(loan.status)">{{ loan.status }}</span></td>
+                    <td class="actions">
+                        <ng-container *ngIf="loan.status === LoanStatus.PENDING">
+                            <button (click)="updateLoanStatus(loan.loanId, 'approve')"
+                                class="action-button approve">Approve</button>
+                            <button (click)="updateLoanStatus(loan.loanId, 'reject')"
+                                class="action-button reject">Reject</button>
+                        </ng-container>
+                        <ng-container *ngIf="loan.status !== LoanStatus.PENDING">
+                            <span class="status-message">Already {{ loan.status }}</span>
+                        </ng-container>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && allLoans.length === 0 && !successMessage" class="no-loans-message">
+        <p>No loan applications found in the system.</p>
+    </div>
+</div>

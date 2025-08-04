@@ -1,28 +1,4 @@
-/* Add styles for feature-button and admin-feature-links */
-.admin-feature-links {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    gap: 15px;
-}
-
-.feature-button {
-    background-color: #6c757d;
-    /* Gray */
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 0.95em;
-    transition: background-color 0.3s ease;
-}
-
-.feature-button:hover {
-    background-color: #5a6268;
-}
-
-/* Existing styles below */
-.admin-dashboard-container {
+.loan-management-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -38,29 +14,16 @@ h2 {
     font-size: 2em;
 }
 
-.logout-button,
 .refresh-button {
     padding: 10px 20px;
     font-size: 1em;
+    background-color: #007bff;
+    color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 0 5px 20px;
-}
-
-.logout-button {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.logout-button:hover {
-    background-color: #c82333;
-}
-
-.refresh-button {
-    background-color: #007bff;
-    color: #fff;
+    margin-bottom: 20px;
 }
 
 .refresh-button:hover {
@@ -68,7 +31,7 @@ h2 {
 }
 
 .loading-message,
-.no-pending-message {
+.no-loans-message {
     margin-top: 20px;
     font-size: 1.1em;
     color: #6c757d;
@@ -81,7 +44,7 @@ h2 {
     font-size: 0.95em;
     text-align: center;
     width: 100%;
-    max-width: 700px;
+    max-width: 900px;
 }
 
 .success-message {
@@ -96,9 +59,9 @@ h2 {
     border: 1px solid #f5c6cb;
 }
 
-.user-list {
+.loan-list-section {
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px;
     margin-top: 30px;
     background-color: #fff;
     border-radius: 8px;
@@ -130,7 +93,7 @@ h3 {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 0;
+    margin-top: 20px;
 }
 
 th,
@@ -153,7 +116,6 @@ tr:hover {
 
 .actions {
     white-space: nowrap;
-    /* Prevent buttons from wrapping */
 }
 
 .action-button {
@@ -192,14 +154,14 @@ tr:hover {
     font-size: 0.85em;
 }
 
-/* Styles for KYC status text itself */
+/* Status styling */
 .status-pending {
     color: #ffc107;
     /* Yellow/Orange */
     font-weight: bold;
 }
 
-.status-verified {
+.status-approved {
     color: #28a745;
     /* Green */
     font-weight: bold;
@@ -209,11 +171,4 @@ tr:hover {
     color: #dc3545;
     /* Red */
     font-weight: bold;
-}
-
-.instruction-message {
-    font-size: 0.9em;
-    color: #6c757d;
-    margin-top: -10px;
-    margin-bottom: 20px;
 }

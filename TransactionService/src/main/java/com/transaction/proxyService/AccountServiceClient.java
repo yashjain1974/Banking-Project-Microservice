@@ -1,7 +1,5 @@
 package com.transaction.proxyService;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -11,11 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.transaction.dto.AccountDto;
-import com.transaction.dto.AccountDto.AccountStatus;
-import com.transaction.dto.AccountDto.AccountType;
 import com.transaction.dto.DepositRequestDto;
 import com.transaction.dto.WithdrawRequestDto;
-import com.transaction.exceptions.TransactionProcessingException; // Corrected import for custom exception
+import com.transaction.exceptions.TransactionProcessingException;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -43,6 +39,20 @@ public interface AccountServiceClient {
         // Instead of returning a mock, throw an exception to indicate service unavailability
         throw new TransactionProcessingException("Account service is unavailable or returned an error for account " + accountId, t);
     }
+
+ /**
+  * Retrieves account details by account number from the Account Service.
+  * NEW METHOD
+  */
+ @GetMapping("/number/{accountNumber}") // Assuming Account Service exposes this endpoint
+ @CircuitBreaker(name = "accountService", fallbackMethod = "getAccountByNumberFallback")
+ @Retry(name = "accountService")
+ AccountDto getAccountByAccountNumber(@PathVariable("accountNumber") String accountNumber);
+
+ default AccountDto getAccountByNumberFallback(String accountNumber, Throwable t) {
+     System.err.println("Fallback triggered for getAccountByAccountNumber for number " + accountNumber + ": " + t.getMessage());
+     throw new TransactionProcessingException("Account service is unavailable or returned an error for account number " + accountNumber, t);
+ }
 
  /**
   * Retrieves all accounts associated with a specific user ID from the Account Service.

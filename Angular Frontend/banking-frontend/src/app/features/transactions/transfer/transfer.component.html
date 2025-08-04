@@ -1,0 +1,41 @@
+<div class="transfer-container">
+  <h2>Transfer Funds</h2>
+
+  <div *ngIf="loadingAccounts" class="loading-message">Loading your accounts...</div>
+  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+  <div *ngIf="!loadingAccounts && accounts.length > 0" class="transfer-form-section">
+    <form (ngSubmit)="onSubmit()" #formRef="ngForm">
+      <div class="form-group">
+        <label for="fromAccountId">From Account:</label>
+        <select id="fromAccountId" name="fromAccountId" [(ngModel)]="transferForm.fromAccountId"
+          (change)="onFromAccountChange()" required>
+          <option *ngFor="let account of accounts" [value]="account.accountId">
+            {{ account.accountNumber }} ({{ account.accountType }} - Balance: {{ account.balance |
+            currency:'INR':'symbol':'1.2-2' }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="toAccountNumber">To Account (Number):</label>
+        <input type="text" id="toAccountNumber" name="toAccountNumber" [(ngModel)]="transferForm.toAccountNumber"
+          required placeholder="Enter recipient's account number">
+      </div>
+
+      <div class="form-group">
+        <label for="amount">Amount (INR):</label>
+        <input type="number" id="amount" name="amount" [(ngModel)]="transferForm.amount" required min="0.01"
+          step="0.01">
+      </div>
+
+      <button type="submit" [disabled]="!formRef.valid" class="transfer-button">Transfer</button>
+    </form>
+  </div>
+
+  <div *ngIf="!loadingAccounts && accounts.length === 0" class="no-accounts-message">
+    <p>You need an active account to transfer funds from.</p>
+    <a routerLink="/accounts" class="create-account-link">Go to Accounts</a>
+  </div>
+</div>

@@ -27,8 +27,6 @@ import com.accountMicroservice.model.Account;
 import com.accountMicroservice.model.AccountStatus;
 import com.accountMicroservice.proxyService.UserServiceClient;
 
-
-
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -44,27 +42,21 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Creates a new bank account for a user.
-     * Validates user existence and KYC status via User Service.
-     * @param request The AccountCreationRequest DTO.
-     * @return The created AccountResponse DTO.
-     * @throws AccountCreationException if account creation fails (e.g., user not found, KYC not verified).
      */
     @Override
     @Transactional
     public AccountResponse createAccount(AccountCreationRequest request) {
         try {
-            // 1. Validate User existence and KYC status via User Service
-            UserDto user = userServiceClient.getUserProfileById(request.getUserId()); // This returns UserDto directly
+            UserDto user = userServiceClient.getUserProfileById(request.getUserId());
             
-            if (user == null) { // <--- CORRECTED: Check for null directly
+            if (user == null) {
                 throw new AccountCreationException("User not found with ID: " + request.getUserId());
             }
 
-            if (user.getKycStatus() != UserDto.KycStatus.VERIFIED) { // <--- KYC CHECK
+            if (user.getKycStatus() != UserDto.KycStatus.VERIFIED) {
                 throw new AccountCreationException("Account creation denied: User KYC status is " + user.getKycStatus() + ". Must be VERIFIED.");
             }
 
-            // 2. Generate a unique account number
             String newAccountNumber = generateUniqueAccountNumber();
             while (accountRepository.findByAccountNumber(newAccountNumber).isPresent()) {
                 newAccountNumber = generateUniqueAccountNumber();
@@ -85,7 +77,7 @@ public class AccountServiceImpl implements AccountService {
             throw new AccountCreationException("Failed to create account due to data integrity violation (e.g., duplicate account number).", e);
         } catch (HttpClientErrorException e) {
             throw new AccountProcessingException("Failed to validate user due to User Service error: " + e.getResponseBodyAsString(), e);
-        } catch (AccountCreationException e) { // Re-throw specific exception
+        } catch (AccountCreationException e) {
             throw e;
         } catch (Exception e) {
             throw new AccountCreationException("Failed to create account: " + e.getMessage(), e);
@@ -94,7 +86,6 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Deposits funds into a specified account.
-     * Validates account status (e.g., ACTIVE) but KYC is usually checked at transaction initiation.
      */
     @Override
     @Transactional
@@ -105,7 +96,6 @@ public class AccountServiceImpl implements AccountService {
         if (request.getAmount() <= 0) {
             throw new AccountProcessingException("Deposit amount must be positive.");
         }
-        // Optional: Check if account is ACTIVE before deposit
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountProcessingException("Deposit denied: Account ID " + accountId + " is " + account.getStatus() + ".");
         }
@@ -122,7 +112,6 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Withdraws funds from a specified account.
-     * Validates account status (e.g., ACTIVE) but KYC is usually checked at transaction initiation.
      */
     @Override
     @Transactional
@@ -136,7 +125,6 @@ public class AccountServiceImpl implements AccountService {
         if (account.getBalance() < request.getAmount()) {
             throw new InsufficientFundsException("Insufficient funds in account ID: " + accountId);
         }
-        // Optional: Check if account is ACTIVE before withdrawal
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountProcessingException("Withdrawal denied: Account ID " + accountId + " is " + account.getStatus() + ".");
         }
@@ -151,13 +139,27 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    // --- Existing methods (getAccountById, getAccountsByUserId, updateAccountStatus, deleteAccount) ---
+    /**
+     * Retrieves account details by account ID.
+     */
     @Override
     public Optional<AccountResponse> getAccountById(String accountId) {
         return accountRepository.findById(accountId)
                                 .map(this::mapToAccountResponse);
     }
 
+    /**
+     * Retrieves account details by account number.
+     */
+    @Override
+    public Optional<AccountResponse> getAccountByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber)
+                                .map(this::mapToAccountResponse);
+    }
+
+    /**
+     * Retrieves all accounts associated with a specific user ID.
+     */
     @Override
     public List<AccountResponse> getAccountsByUserId(String userId) {
         return accountRepository.findByUserId(userId)
@@ -166,6 +168,9 @@ public class AccountServiceImpl implements AccountService {
                                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates the status of an account.
+     */
     @Override
     @Transactional
     public AccountResponse updateAccountStatus(String accountId, AccountUpdateRequest request) {
@@ -181,6 +186,9 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    /**
+     * Deletes or closes an account.
+     */
     @Override
     @Transactional
     public void deleteAccount(String accountId) {
@@ -206,7 +214,15 @@ public class AccountServiceImpl implements AccountService {
         );
     }
 
+    /**
+     * Helper method to generate a unique 10-digit account number.
+     * Ensures the number is always positive.
+     */
     private String generateUniqueAccountNumber() {
-        return String.format("%010d", UUID.randomUUID().getMostSignificantBits() % 10_000_000_000L);
+        // Get the absolute value of the most significant bits to ensure a positive number
+        // Modulo by 10 billion to get a number within 10 digits
+        long positiveNumber = Math.abs(UUID.randomUUID().getMostSignificantBits() % 10_000_000_000L);
+        // Format to a 10-digit string with leading zeros if necessary
+        return String.format("%010d", positiveNumber);
     }
 }

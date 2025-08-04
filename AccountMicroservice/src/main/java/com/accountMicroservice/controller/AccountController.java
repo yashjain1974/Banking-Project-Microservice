@@ -20,47 +20,33 @@ import com.accountMicroservice.dto.AccountResponse;
 import com.accountMicroservice.dto.AccountUpdateRequest;
 import com.accountMicroservice.dto.DepositRequest;
 import com.accountMicroservice.dto.WithdrawRequest;
-import com.accountMicroservice.exception.AccountCreationException;
 import com.accountMicroservice.exception.AccountNotFoundException;
-import com.accountMicroservice.exception.AccountProcessingException;
-import com.accountMicroservice.exception.InsufficientFundsException;
 import com.accountMicroservice.service.AccountService;
 
 import jakarta.validation.Valid; // For input validation
 
-@RestController // Marks this class as a REST controller
-@RequestMapping("/accounts") // Base path for all endpoints in this controller
+@RestController
+@RequestMapping("/accounts")
 public class AccountController {
 
     private final AccountService accountService;
 
-    @Autowired // Injects the AccountService implementation
+    @Autowired
     public AccountController(AccountService accountService) {
         this.accountService = accountService;
     }
 
     /**
      * Handles POST /accounts/create requests.
-     * Creates a new bank account.
-     *
-     * @param request The AccountCreationRequest DTO containing userId, accountType, and initialBalance.
-     * @return ResponseEntity with the created AccountResponse and HTTP status 201 (Created).
-     * @throws AccountCreationException if the account creation fails (e.g., user not found, duplicate account number).
      */
     @PostMapping("/create")
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody AccountCreationRequest request) {
-        // @Valid triggers validation defined in AccountCreationRequest DTO
         AccountResponse account = accountService.createAccount(request);
         return new ResponseEntity<>(account, HttpStatus.CREATED);
     }
 
     /**
      * Handles GET /accounts/user/{userId} requests.
-     * Retrieves all accounts associated with a specific user.
-     *
-     * @param userId The ID of the user.
-     * @return ResponseEntity with a list of AccountResponse DTOs and HTTP status 200 (OK).
-     * Returns 204 No Content if no accounts are found for the user.
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<AccountResponse>> getAccountsByUserId(@PathVariable String userId) {
@@ -73,11 +59,6 @@ public class AccountController {
 
     /**
      * Handles GET /accounts/{accountId} requests.
-     * Retrieves account details by account ID.
-     *
-     * @param accountId The ID of the account.
-     * @return ResponseEntity with the AccountResponse DTO and HTTP status 200 (OK),
-     * or 404 (Not Found) if the account does not exist.
      */
     @GetMapping("/{accountId}")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable String accountId) {
@@ -87,14 +68,18 @@ public class AccountController {
     }
 
     /**
+     * Handles GET /accounts/number/{accountNumber} requests.
+     * NEW ENDPOINT
+     */
+    @GetMapping("/number/{accountNumber}")
+    public ResponseEntity<AccountResponse> getAccountByAccountNumber(@PathVariable String accountNumber) {
+        Optional<AccountResponse> account = accountService.getAccountByAccountNumber(accountNumber);
+        return account.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                      .orElseThrow(() -> new AccountNotFoundException("Account not found with number: " + accountNumber));
+    }
+
+    /**
      * Handles PUT /accounts/{accountId} requests (for updating status).
-     * Updates the status of an account.
-     *
-     * @param accountId The ID of the account to update.
-     * @param request The AccountUpdateRequest DTO containing the new status.
-     * @return ResponseEntity with the updated AccountResponse DTO and HTTP status 200 (OK).
-     * @throws AccountNotFoundException if the account is not found.
-     * @throws AccountProcessingException if the update fails.
      */
     @PutMapping("/{accountId}")
     public ResponseEntity<AccountResponse> updateAccountStatus(@PathVariable String accountId,
@@ -105,29 +90,15 @@ public class AccountController {
 
     /**
      * Handles DELETE /accounts/{accountId} requests.
-     * Deletes or closes an account.
-     *
-     * @param accountId The ID of the account to delete.
-     * @return ResponseEntity with HTTP status 204 (No Content) upon successful deletion.
-     * @throws AccountNotFoundException if the account is not found.
-     * @throws AccountProcessingException if the deletion fails.
      */
     @DeleteMapping("/{accountId}")
     public ResponseEntity<Void> deleteAccount(@PathVariable String accountId) {
         accountService.deleteAccount(accountId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 indicates successful processing with no content to return
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * Handles POST /accounts/{accountId}/deposit requests.
-     * This endpoint is specifically designed for inter-service communication (e.g., from Transaction Service).
-     * Deposits funds into a specified account.
-     *
-     * @param accountId The ID of the account to deposit into.
-     * @param request The DepositRequest DTO from the calling service.
-     * @return ResponseEntity with the updated AccountResponse DTO and HTTP status 200 (OK).
-     * @throws AccountNotFoundException if the account is not found.
-     * @throws AccountProcessingException if the deposit fails.
      */
     @PostMapping("/{accountId}/deposit")
     public ResponseEntity<AccountResponse> depositFunds(@PathVariable String accountId,
@@ -138,15 +109,6 @@ public class AccountController {
 
     /**
      * Handles POST /accounts/{accountId}/withdraw requests.
-     * This endpoint is specifically designed for inter-service communication (e.g., from Transaction Service).
-     * Withdraws funds from a specified account.
-     *
-     * @param accountId The ID of the account to withdraw from.
-     * @param request The WithdrawRequest DTO from the calling service.
-     * @return ResponseEntity with the updated AccountResponse DTO and HTTP status 200 (OK).
-     * @throws AccountNotFoundException if the account is not found.
-     * @throws InsufficientFundsException if the account has insufficient funds.
-     * @throws AccountProcessingException if the withdrawal fails.
      */
     @PostMapping("/{accountId}/withdraw")
     public ResponseEntity<AccountResponse> withdrawFunds(@PathVariable String accountId,

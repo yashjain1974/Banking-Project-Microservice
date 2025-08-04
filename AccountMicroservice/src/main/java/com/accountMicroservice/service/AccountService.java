@@ -23,7 +23,7 @@ public interface AccountService {
      * Creates a new bank account for a user.
      * @param request The AccountCreationRequest DTO.
      * @return The created AccountResponse DTO.
-     * @throws AccountCreationException if account creation fails (e.g., user not found, duplicate account number).
+     * @throws AccountCreationException if account creation fails.
      */
     AccountResponse createAccount(AccountCreationRequest request);
 
@@ -33,6 +33,13 @@ public interface AccountService {
      * @return An Optional containing the AccountResponse DTO if found, or empty otherwise.
      */
     Optional<AccountResponse> getAccountById(String accountId);
+
+    /**
+     * Retrieves account details by account number.
+     * @param accountNumber The account number.
+     * @return An Optional containing the AccountResponse DTO if found, or empty otherwise.
+     */
+    Optional<AccountResponse> getAccountByAccountNumber(String accountNumber); // <--- NEW METHOD
 
     /**
      * Retrieves all accounts associated with a specific user ID.
@@ -53,7 +60,6 @@ public interface AccountService {
 
     /**
      * Deposits funds into a specified account.
-     * This method is called by other services (e.g., Transaction Service).
      * @param accountId The ID of the account to deposit into.
      * @param request The DepositRequest DTO.
      * @return The updated AccountResponse DTO.
@@ -64,7 +70,6 @@ public interface AccountService {
 
     /**
      * Withdraws funds from a specified account.
-     * This method is called by other services (e.g., Transaction Service).
      * @param accountId The ID of the account to withdraw from.
      * @param request The WithdrawRequest DTO.
      * @return The updated AccountResponse DTO.
@@ -80,5 +85,5 @@ public interface AccountService {
      * @throws AccountNotFoundException if the account is not found.
      * @throws AccountProcessingException if the deletion fails.
      */
-    void deleteAccount(String accountId); // Corresponds to DELETE /accounts/{accountId}
+    void deleteAccount(String accountId);
 }
