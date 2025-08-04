@@ -1,0 +1,61 @@
+<div class="accounts-container">
+    <h2>Your Bank Accounts</h2>
+
+    <div *ngIf="loading" class="loading-message">Loading your accounts...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div class="account-creation-section">
+        <h3>Create New Account</h3>
+        <form (ngSubmit)="createAccount()" #accountForm="ngForm">
+            <div class="form-group">
+                <label for="accountType">Account Type:</label>
+                <select id="accountType" name="accountType" [(ngModel)]="newAccount.accountType" required>
+                    <option *ngFor="let type of accountTypes" [value]="type">{{ type }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="initialBalance">Initial Balance:</label>
+                <input type="number" id="initialBalance" name="initialBalance" [(ngModel)]="newAccount.initialBalance"
+                    required min="0">
+            </div>
+            <button type="submit" [disabled]="!accountForm.valid" class="create-button">Create Account</button>
+        </form>
+    </div>
+
+    <div *ngIf="!loading && accounts.length > 0" class="account-list">
+        <h3>Existing Accounts ({{ accounts.length }})</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Account Number</th>
+                    <th>Type</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let account of accounts">
+                    <td>{{ account.accountNumber }}</td>
+                    <td>{{ account.accountType }}</td>
+                    <td>{{ account.balance | currency:'INR':'symbol':'1.2-2' }}</td>
+                    <td><span [ngClass]="getAccountStatusClass(account.status)">{{ account.status }}</span></td>
+                    <td>{{ account.createdAt | date:'short' }}</td>
+                    <td class="actions">
+                        <button (click)="blockAccount(account.accountId)" [disabled]="account.status === 'BLOCKED'"
+                            class="action-button block">Block</button>
+                        <button (click)="unblockAccount(account.accountId)" [disabled]="account.status === 'ACTIVE'"
+                            class="action-button unblock">Unblock</button>
+                        <button (click)="deleteAccount(account.accountId)" class="action-button delete">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && accounts.length === 0 && !successMessage" class="no-accounts-message">
+        <p>You currently have no bank accounts. Use the form above to create one!</p>
+    </div>
+</div>

@@ -1,0 +1,23 @@
+<div class="dashboard-container">
+    <h2>Welcome to Your Dashboard!</h2>
+    <div *ngIf="authService.isLoggedIn()">
+    <p>You are logged in as: <strong>{{ authService.getIdentityClaims()?.preferred_username || 'User' }}</strong></p>
+        <button (click)="logout()" class="logout-button">Logout</button>
+
+        <h3>Your Profile (from User Microservice)</h3>
+        <div *ngIf="userProfile">
+            <p>User ID: {{ userProfile.userId }}</p>
+            <p>Email: {{ userProfile.email }}</p>
+            <p>First Name: {{ userProfile.firstName }}</p>
+            <p>Last Name: {{ userProfile.lastName }}</p>
+            <p>Role: {{ userProfile.role }}</p>
+            <p>KYC Status: {{ userProfile.kycStatus }}</p>
+        </div>
+        <div *ngIf="!userProfile">
+            <p>Loading user profile...</p>
+        </div>
+    </div>
+    <div *ngIf="!authService.isLoggedIn()">
+        <p>You are not logged in. Please <a routerLink="/login">Login</a>.</p>
+    </div>
+</div>

@@ -11,14 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.transaction.dao.TransactionRepository;
-
-//src/main/java/com/transaction/service/TransactionServiceImpl.java
-
 import com.transaction.dto.AccountDto;
 import com.transaction.dto.DepositRequest;
 import com.transaction.dto.DepositRequestDto;
-import com.transaction.dto.NotificationRequestDto; // Re-import NotificationRequestDto for fallback
+import com.transaction.dto.NotificationRequestDto;
 import com.transaction.dto.TransferRequest;
+import com.transaction.dto.UserDto; // Import UserDto for KYC check
 import com.transaction.dto.WithdrawRequest;
 import com.transaction.dto.WithdrawRequestDto;
 import com.transaction.event.TransactionCompletedEvent;
@@ -26,14 +24,16 @@ import com.transaction.exceptions.AccountNotFoundException;
 import com.transaction.exceptions.InsufficientFundsException;
 import com.transaction.exceptions.InvalidTransactionException;
 import com.transaction.exceptions.TransactionProcessingException;
+import com.transaction.exceptions.UnauthorizedUserException;
 import com.transaction.model.Transaction;
 import com.transaction.model.TransactionStatus;
 import com.transaction.model.TransactionType;
 import com.transaction.proxyService.AccountServiceClient;
 import com.transaction.proxyService.LoanServiceClient;
-import com.transaction.proxyService.NotificationServiceClient; // Import NotificationServiceClient for fallback
+import com.transaction.proxyService.NotificationServiceClient;
+import com.transaction.proxyService.UserServiceClient; // Import UserServiceClient
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker; // Import for CircuitBreaker
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -42,19 +42,35 @@ public class TransactionServiceImpl implements TransactionService {
     private final AccountServiceClient accountServiceClient;
     private final LoanServiceClient loanServiceClient;
     private final KafkaTemplate<String, TransactionCompletedEvent> kafkaTemplate;
-    private final NotificationServiceClient notificationServiceClient; // Inject NotificationServiceClient
+    private final NotificationServiceClient notificationServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Autowired
     public TransactionServiceImpl(TransactionRepository transactionRepository,
                               AccountServiceClient accountServiceClient,
                               LoanServiceClient loanServiceClient,
                               KafkaTemplate<String, TransactionCompletedEvent> kafkaTemplate,
-                              NotificationServiceClient notificationServiceClient) { // Add NotificationServiceClient to constructor
+                              NotificationServiceClient notificationServiceClient,
+                              UserServiceClient userServiceClient) {
         this.transactionRepository = transactionRepository;
         this.accountServiceClient = accountServiceClient;
         this.loanServiceClient = loanServiceClient;
         this.kafkaTemplate = kafkaTemplate;
-        this.notificationServiceClient = notificationServiceClient; // Initialize
+        this.notificationServiceClient = notificationServiceClient;
+        this.userServiceClient = userServiceClient;
+    }
+
+    /**
+     * Helper method for KYC check.
+     */
+    private void checkKycStatus(String userId) {
+        UserDto userProfile = userServiceClient.getUserProfileById(userId);
+        if (userProfile == null) {
+            throw new UnauthorizedUserException("User profile not found for transaction. Cannot proceed.");
+        }
+        if (userProfile.getKycStatus() != UserDto.KycStatus.VERIFIED) {
+            throw new UnauthorizedUserException("Transaction denied: User KYC status is " + userProfile.getKycStatus() + ". Must be VERIFIED.");
+        }
     }
 
     /**
@@ -78,6 +94,9 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new AccountNotFoundException("Target account not found with ID: " + request.getAccountId());
             }
 
+            // Perform KYC check for the user associated with the target account
+            checkKycStatus(targetAccount.getUserId());
+
             DepositRequestDto depositRequestDto = new DepositRequestDto(transaction.getTransactionId(), request.getAmount());
             accountServiceClient.depositFunds(request.getAccountId(), depositRequestDto);
 
@@ -99,7 +118,7 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw new TransactionProcessingException("Deposit failed due to Account Service error: " + e.getResponseBodyAsString(), e);
-        } catch (AccountNotFoundException e) {
+        } catch (AccountNotFoundException | UnauthorizedUserException e) { // <--- THIS CATCH BLOCK
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw e;
@@ -131,6 +150,10 @@ public class TransactionServiceImpl implements TransactionService {
             if (sourceAccount == null) {
                 throw new AccountNotFoundException("Source account not found with ID: " + request.getAccountId());
             }
+
+            // Perform KYC check for the user associated with the source account
+            checkKycStatus(sourceAccount.getUserId());
+
             if (sourceAccount.getBalance() < request.getAmount()) {
                 throw new InsufficientFundsException("Insufficient funds in account: " + request.getAccountId());
             }
@@ -156,7 +179,7 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw new TransactionProcessingException("Withdrawal failed due to Account Service error: " + e.getResponseBodyAsString(), e);
-        } catch (AccountNotFoundException | InsufficientFundsException | InvalidTransactionException e) {
+        } catch (AccountNotFoundException | InsufficientFundsException | InvalidTransactionException | UnauthorizedUserException e) { // <--- THIS CATCH BLOCK
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw e;
@@ -193,6 +216,11 @@ public class TransactionServiceImpl implements TransactionService {
             if (targetAccount == null) {
                 throw new AccountNotFoundException("Target account not found with ID: " + request.getToAccountId());
             }
+
+            // Perform KYC check for both source and target users
+            checkKycStatus(sourceAccount.getUserId());
+            checkKycStatus(targetAccount.getUserId());
+
             if (sourceAccount.getBalance() < request.getAmount()) {
                 throw new InsufficientFundsException("Insufficient funds in source account: " + request.getFromAccountId());
             }
@@ -210,7 +238,6 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.SUCCESS);
             transaction = transactionRepository.save(transaction);
 
-            // PUBLISH EVENT TO KAFKA (for sender)
             String senderNotificationMessage = "A transfer of " + request.getAmount() + " has been made from your account " + sourceAccount.getAccountNumber() + " to " + targetAccount.getAccountNumber() + ". Transaction ID: " + transaction.getTransactionId();
             publishTransactionCompletedEvent(
                 transaction.getTransactionId(),
@@ -222,7 +249,6 @@ public class TransactionServiceImpl implements TransactionService {
                 senderNotificationMessage
             );
 
-            // PUBLISH EVENT TO KAFKA (for receiver)
             String receiverNotificationMessage = "You have received " + request.getAmount() + " in your account " + targetAccount.getAccountNumber() + " from " + sourceAccount.getAccountNumber() + ". Transaction ID: " + transaction.getTransactionId();
             publishTransactionCompletedEvent(
                 transaction.getTransactionId(),
@@ -238,7 +264,7 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw new TransactionProcessingException("Transfer failed due to Account Service error: " + e.getResponseBodyAsString(), e);
-        } catch (AccountNotFoundException | InsufficientFundsException | InvalidTransactionException e) {
+        } catch (AccountNotFoundException | InsufficientFundsException | InvalidTransactionException | UnauthorizedUserException e) {
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
             throw e;
@@ -266,10 +292,6 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findByFromAccountIdOrToAccountId(accountId, accountId);
     }
 
-    /**
-     * Helper method to publish TransactionCompletedEvent to Kafka or fall back to direct call.
-     * Uses Resilience4j Circuit Breaker for fault tolerance.
-     */
     @CircuitBreaker(name = "kafkaNotificationPublisher", fallbackMethod = "publishTransactionCompletedEventFallback")
     private void publishTransactionCompletedEvent(String transactionId, String userId, String accountId, Double amount, String type, String status, String notificationMessage) {
         TransactionCompletedEvent event = new TransactionCompletedEvent(
@@ -281,27 +303,20 @@ public class TransactionServiceImpl implements TransactionService {
             status,
             notificationMessage
         );
-        kafkaTemplate.send("transaction-events", event); // 'transaction-events' is the Kafka topic name
+        kafkaTemplate.send("transaction-events", event);
         System.out.println("Published transaction event to Kafka: " + event.getTransactionId());
     }
 
-    /**
-     * Fallback method for publishTransactionCompletedEvent.
-     * This method is called if publishing to Kafka fails or the Kafka Circuit Breaker is open.
-     * It falls back to calling the Notification Service directly via Feign.
-     */
     private void publishTransactionCompletedEventFallback(String transactionId, String userId, String accountId, Double amount, String type, String status, String notificationMessage, Throwable t) {
         System.err.println("Fallback triggered for Kafka publishing for transaction " + transactionId + " due to: " + t.getMessage());
         System.err.println("Attempting to send notification directly via Notification Service Feign client.");
 
         try {
             NotificationRequestDto notificationRequest = new NotificationRequestDto(userId, NotificationRequestDto.NotificationType.EMAIL, "Fallback: " + notificationMessage);
-            // Call the Notification Service directly
-            notificationServiceClient.sendEmailNotification(notificationRequest); // Assuming email as default fallback
+            notificationServiceClient.sendEmailNotification(notificationRequest);
             System.out.println("Notification sent directly via Feign client for transaction: " + transactionId);
         } catch (Exception feignException) {
             System.err.println("Failed to send notification directly via Feign client for transaction " + transactionId + ": " + feignException.getMessage());
-            // At this point, both Kafka and direct fallback failed. Log and potentially alert.
         }
     }
 }

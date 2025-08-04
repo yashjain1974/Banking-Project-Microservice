@@ -1,0 +1,123 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 800px;
+    text-align: center;
+}
+
+h2 {
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.1em;
+    color: #555;
+}
+
+.logout-button,
+.proceed-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.logout-button {
+    background-color: #dc3545;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+.proceed-button {
+    background-color: #28a745;
+}
+
+.proceed-button:hover {
+    background-color: #218838;
+}
+
+h3 {
+    color: #007bff;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+div>p {
+    margin: 5px 0;
+}
+
+.loading-message,
+.error-message {
+    margin-top: 15px;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.error-message {
+    color: #dc3545;
+}
+
+.kyc-status-section {
+    margin-top: 25px;
+    padding: 15px;
+    border-radius: 8px;
+    width: 90%;
+    box-sizing: border-box;
+}
+
+.kyc-pending-message {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.kyc-rejected-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.kyc-verified-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* Styles for KYC status text itself */
+.status-pending {
+    color: #ffc107;
+    /* Yellow/Orange */
+    font-weight: bold;
+}
+
+.status-verified {
+    color: #28a745;
+    /* Green */
+    font-weight: bold;
+}
+
+.status-rejected {
+    color: #dc3545;
+    /* Red */
+    font-weight: bold;
+}

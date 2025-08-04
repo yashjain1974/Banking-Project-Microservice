@@ -8,6 +8,7 @@ import com.userMicroservice.model.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size; // For password length validation
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,17 +26,21 @@ public class UserCreationRequest {
     // but rather set internally or in a sync process.
     // For direct API creation, you might include it if it's pre-assigned.
     // For simplicity here, we assume it's either generated or provided.
-    private String userId; // Can be null if generated internally
+    private String userId; // Can be null if generated internally by Keycloak
 
     @NotBlank(message = "Username cannot be empty")
     private String username;
+
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 8, message = "Password must be at least 8 characters long") // Example password policy
+    private String password; // <--- ADDED: Password field for Keycloak registration
 
     @NotBlank(message = "Email cannot be empty")
     @Email(message = "Email should be a valid email address")
     private String email;
 
     @NotNull(message = "Role cannot be null")
-    private UserRole role;
+    private UserRole role; // Default to CUSTOMER
 
     // Additional profile fields
     @NotBlank(message = "First name cannot be empty")
@@ -54,5 +59,5 @@ public class UserCreationRequest {
     private String phoneNumber;
 
     @NotNull(message = "KYC status cannot be null")
-    private KycStatus kycStatus;
+    private KycStatus kycStatus; // Default to PENDING
 }

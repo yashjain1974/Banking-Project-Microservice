@@ -109,3 +109,16 @@ management:
     metrics:
       export:
         enabled: true # Enable Prometheus metrics export
+keycloak:
+  admin:
+    url: http://localhost:8080 # Base URL of your Keycloak server
+    realm: bank-realm # The realm where you manage users
+    # Option 1: For Client Credentials Grant (Recommended for Production)
+    # Create a confidential client in Keycloak (e.g., 'user-service-admin-client')
+    # and enable 'Service accounts enabled' for it.
+    # Then go to its 'Service Account Roles' tab and assign 'realm-management' -> 'manage-users' role.
+    client-id: user-service-admin-client # Client ID for service account
+    client-secret: FkhpvuuZuYgHkESuq1QEPqxgjags6yle # Get this from Keycloak client's 'Credentials' tab
+    # Option 2: For Direct Admin User/Password (Simpler for Dev, less secure for Prod)
+    username: yash # Keycloak admin username
+    password: yash # Keycloak admin password

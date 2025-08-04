@@ -1,17 +1,17 @@
 package com.transaction.exceptions;
 
-import com.transaction.dto.ErrorResponse;
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.client.HttpClientErrorException; // For Feign client errors
-import org.springframework.web.servlet.NoHandlerFoundException; // For 404 on unknown paths
+import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
+import com.transaction.dto.ErrorResponse;
 
 @ControllerAdvice // This annotation makes this class capable of handling exceptions across the whole application
 public class GlobalExceptionHandler {
@@ -104,6 +104,20 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+    
+    @ExceptionHandler(UnauthorizedUserException.class) // <--- NEW HANDLER
+    public ResponseEntity<ErrorResponse> handleUnauthorizedUserException(
+            UnauthorizedUserException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
 
     /**
      * Handles HttpClientErrorException (e.g., 4xx/5xx from Feign clients).
