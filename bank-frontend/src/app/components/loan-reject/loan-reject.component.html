@@ -1,0 +1,16 @@
+
+<mat-card class="reject-card">
+  <mat-card-title>Reject Loan</mat-card-title>
+  <mat-card-content>
+    <mat-form-field class="full-width">
+      <mat-label>Loan ID</mat-label>
+      <input matInput [(ngModel)]="loanId" placeholder="Enter Loan ID to Reject" />
+    </mat-form-field>
+
+    <button mat-raised-button color="warn" (click)="rejectLoan()">Reject Loan</button>
+
+    <div *ngIf="response" class="response-box">
+      <p><strong>Response:</strong> {{ response.message || 'Loan Rejected Successfully' }}</p>
+    </div>
+  </mat-card-content>
+</mat-card>

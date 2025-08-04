@@ -1,0 +1,18 @@
+
+<mat-card class="loan-user-card">
+  <mat-card-title>Get Loans by User</mat-card-title>
+  <mat-card-content>
+    <mat-form-field class="full-width">
+      <mat-label>User ID</mat-label>
+      <input matInput [(ngModel)]="userId" placeholder="Enter User ID" />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="fetchLoans()">Fetch Loans</button>
+
+    <mat-list *ngIf="loans.length">
+      <mat-list-item *ngFor="let loan of loans">
+        <strong>{{ loan.userId }}</strong> — {{ loan.status }} — ₹{{ loan.amount }}
+      </mat-list-item>
+    </mat-list>
+  </mat-card-content>
+</mat-card>
