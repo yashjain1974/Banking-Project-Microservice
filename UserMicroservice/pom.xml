@@ -89,6 +89,25 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-observation</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-zipkin</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>io.github.openfeign</groupId>
+	<artifactId>feign-micrometer</artifactId>
+</dependency>
 
 
 		<dependency>
@@ -117,6 +136,25 @@
 		  <artifactId>ojdbc10</artifactId>
 		  <version>19.3.0.0</version>
 	</dependency>
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-observation</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-zipkin</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>io.github.openfeign</groupId>
+	<artifactId>feign-micrometer</artifactId>
+</dependency>
 
 	</dependencies>
 	<dependencyManagement>

@@ -53,6 +53,8 @@ logging:
       org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
       org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
+  pattern:
+   level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 # Resilience4j Configuration for Account Service
 resilience4j:
@@ -93,13 +95,8 @@ resilience4j:
       userService: # Retry for User Service Feign client
         baseConfig: default
 management:
-  endpoints:
-    web:
-      base-path: /actuator
-      exposure:
-        include: "*"
-  endpoint:
-    prometheus:
-      enabled: true
-    metrics:
-      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+      
+

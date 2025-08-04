@@ -86,6 +86,8 @@ logging:
       io.github.resilience4j: DEBUG
     reactor:
       netty: DEBUG # For Netty (Webflux server) debugging
+  pattern:
+   level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 # Eureka Client Configuration (essential for service discovery)
 eureka:
@@ -96,12 +98,6 @@ eureka:
     preferIpAddress: true # Optional: Good for containerized environments
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus # Expose health, info, and prometheus endpoints
-  metrics:
-   prometheus:
-    metrics:
-      export:
-        enabled: true # Enable Prometheus metrics export
+  tracing:
+    sampling:
+      probability: 1.0

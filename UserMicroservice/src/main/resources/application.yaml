@@ -43,6 +43,8 @@ logging:
       org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
       org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 # Eureka Client Configuration (essential if using Eureka for service discovery)
 eureka:
@@ -109,6 +111,9 @@ management:
     metrics:
       export:
         enabled: true # Enable Prometheus metrics export
+  tracing:
+    sampling:
+      probability: 1.0
 keycloak:
   admin:
     url: http://localhost:8080 # Base URL of your Keycloak server
@@ -122,3 +127,5 @@ keycloak:
     # Option 2: For Direct Admin User/Password (Simpler for Dev, less secure for Prod)
     username: yash # Keycloak admin username
     password: yash # Keycloak admin password
+
+   

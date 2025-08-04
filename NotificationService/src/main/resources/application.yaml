@@ -58,6 +58,8 @@ logging:
       org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG # Log incoming requests
       org.hibernate.SQL: DEBUG # Log Hibernate generated SQL
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter binding
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 eureka:
   client:
@@ -69,12 +71,6 @@ eureka:
     preferIpAddress: true # Optional: Good for containerized environments
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus # Expose health, info, and prometheus endpoints
-  metrics:
-   prometheus:
-    metrics:
-      export:
-        enabled: true # Enable Prometheus metrics export
+  tracing:
+    sampling:
+      probability: 1.0
