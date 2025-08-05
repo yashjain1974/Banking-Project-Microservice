@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Management System</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🏦 Account Management System</h1>
+    <p>Manage your accounts easily</p>
+  </header>
+
+  <nav>
+    <button onclick="showSection('create')">➕ Create</button>
+    <button onclick="showSection('getUserAccounts')">👤 User Accounts</button>
+    <button onclick="showSection('getAccount')">🔎 Get Account</button>
+    <button onclick="showSection('updateStatus')">🔄 Update Status</button>
+    <button onclick="showSection('delete')">🗑️ Delete</button>
+    <button onclick="showSection('deposit')">💰 Deposit</button>
+    <button onclick="showSection('withdraw')">🏧 Withdraw</button>
+  </nav>
+
+  <main>
+    <!-- Create Account -->
+    <section id="create" class="content-section">
+      <h2>Create Account</h2>
+      <!-- <input id="create-userId" placeholder="User ID" /> -->
+      <select id="create-type">
+        <option value="SAVINGS">Savings</option>
+        <option value="CURRENT">Current</option>
+      </select>
+      <input id="create-balance" type="number" placeholder="Initial Balance" />
+      <button onclick="createAccount()">Create</button>
+    </section>
+
+    <!-- Get User Accounts -->
+    <section id="getUserAccounts" class="content-section hidden">
+      <h2>Get User's Accounts</h2>
+      <input id="user-id" placeholder="User ID" />
+      <button onclick="getUserAccounts()">Get Accounts</button>
+      <pre id="user-accounts-result"></pre>
+    </section>
+
+    <!-- Get Account by ID -->
+    <section id="getAccount" class="content-section hidden">
+      <h2>Get Account by ID</h2>
+      <input id="account-id" placeholder="Account ID" />
+      <button onclick="getAccountById()">Fetch</button>
+      <pre id="account-result"></pre>
+    </section>
+
+    <!-- Update Account Status -->
+    <section id="updateStatus" class="content-section hidden">
+      <h2>Update Account Status</h2>
+      <input id="update-id" placeholder="Account ID" />
+      <select id="update-status">
+        <option value="ACTIVE">Active</option>
+        <option value="INACTIVE">Inactive</option>
+        <option value="CLOSED">Closed</option>
+      </select>
+      <button onclick="updateStatus()">Update</button>
+    </section>
+
+    <!-- Delete Account -->
+    <section id="delete" class="content-section hidden">
+      <h2>Delete Account</h2>
+      <input id="delete-id" placeholder="Account ID" />
+      <button onclick="deleteAccount()">Delete</button>
+    </section>
+
+    <!-- Deposit -->
+    <section id="deposit" class="content-section hidden">
+      <h2>Deposit Funds</h2>
+      <input id="deposit-id" placeholder="Account ID" />
+      <input id="deposit-amount" type="number" placeholder="Amount" />
+      <button onclick="deposit()">Deposit</button>
+    </section>
+
+    <!-- Withdraw -->
+    <section id="withdraw" class="content-section hidden">
+      <h2>Withdraw Funds</h2>
+      <input id="withdraw-id" placeholder="Account ID" />
+      <input id="withdraw-amount" type="number" placeholder="Amount" />
+      <button onclick="withdraw()">Withdraw</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
