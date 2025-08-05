@@ -10,5 +10,6 @@ import java.util.List;
 public interface CreditCardRepository extends JpaRepository<CreditCard, String> {
 
     // Retrieve all cards for a specific user
+    boolean existsByCardNumber(String cardNumber);
     List<CreditCard> findByUserId(String userId);
 }

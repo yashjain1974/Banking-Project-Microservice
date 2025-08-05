@@ -3,31 +3,33 @@ package com.creditcardservice.dto;
 import com.creditcardservice.model.CardType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreditCardRequestDTO {
-    @NotBlank
+
+    @NotBlank(message = "User ID cannot be blank")
     private String userId;
 
-    @NotBlank
+    @NotBlank(message = "Account ID cannot be blank")
     private String accountId;
 
-    @NotNull
+    @NotNull(message = "Card type is required")
     private CardType cardType;
 
-    @NotNull
+    @NotNull(message = "Transaction limit is required")
     private Double transactionLimit;
 
-    @NotNull
+    @NotNull(message = "Issue date is required")
     private LocalDate issueDate;
 
-    @NotNull
     private String cardNumber;
 
-    @NotBlank
+    @NotNull(message = "Expiry date is required")
     private LocalDate expiryDate;
-
 }

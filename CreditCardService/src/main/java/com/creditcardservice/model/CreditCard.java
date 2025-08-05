@@ -19,6 +19,8 @@ public class CreditCard {
     private String cardId;
     private String userId;
     private String accountId;
+
+    @Column(unique = true, nullable = false)
     private String cardNumber;
 
     @Enumerated(EnumType.STRING)
