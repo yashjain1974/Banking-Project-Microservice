@@ -1,0 +1,44 @@
+<div class="loan-application-container">
+    <h2>Apply for a New Loan</h2>
+
+    <div *ngIf="loading" class="loading-message">Submitting your application...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div class="loan-form-section">
+        <form (ngSubmit)="onSubmit()" #formRef="ngForm">
+            <div class="form-group">
+                <label for="loanType">Loan Type:</label>
+                <select id="loanType" name="loanType" [(ngModel)]="loanForm.loanType" required>
+                    <option *ngFor="let type of loanTypes" [value]="type">{{ type }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Loan Amount (INR):</label>
+                <input type="number" id="amount" name="amount" [(ngModel)]="loanForm.amount" required min="1" step="any"
+                    (input)="calculateEmiPreview()">
+            </div>
+
+            <div class="form-group">
+                <label for="tenureInMonths">Tenure (Months):</label>
+                <!-- CRITICAL FIX: Ensure 'name' attribute matches the model property 'tenureInMonths' -->
+                <input type="number" id="tenureInMonths" name="tenureInMonths" [(ngModel)]="loanForm.tenureInMonths"
+                    required min="1" (input)="calculateEmiPreview()">
+            </div>
+
+            <div class="form-group">
+                <label for="interestRate">Interest Rate (% per annum):</label>
+                <input type="number" id="interestRate" name="interestRate" [(ngModel)]="loanForm.interestRate" required
+                    min="0.01" step="0.01" (input)="calculateEmiPreview()">
+            </div>
+
+            <div *ngIf="calculatedEmi !== null" class="emi-preview">
+                Estimated EMI: <strong>{{ calculatedEmi | currency:'INR':'symbol':'1.2-2' }}</strong>
+            </div>
+
+            <button type="submit" [disabled]="!formRef.valid || !loanForm.userId" class="apply-button">Apply
+                for Loan</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,403 @@
+.loan-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 32px;
+  color: white;
+}
+
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.title-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(45deg, #fff, #e3f2fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 300;
+}
+
+.main-card {
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: white;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.stats-summary {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1976d2;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.refresh-btn {
+  border-radius: 25px;
+  padding: 0 24px;
+  height: 44px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+}
+
+.refresh-btn mat-icon {
+  margin-right: 8px;
+}
+
+.content-section {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.loan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.loan-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-left: 4px solid #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+.loan-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(25, 118, 210, 0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.loan-card:hover::before {
+  transform: translateX(100%);
+}
+
+.loan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.loan-card.approved {
+  border-left-color: #4caf50;
+}
+
+.loan-card.pending {
+  border-left-color: #ff9800;
+}
+
+.loan-card.rejected {
+  border-left-color: #f44336;
+}
+
+.loan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.loan-id-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loan-icon {
+  color: #666;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.loan-id {
+  display: flex;
+  flex-direction: column;
+}
+
+.id-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.id-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.approved {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.status-badge.pending {
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+.status-badge.rejected {
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+.status-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.card-divider {
+  margin: 16px 0;
+}
+
+.loan-details {
+  margin-bottom: 20px;
+}
+
+.amount-section {
+  margin-bottom: 16px;
+}
+
+.amount-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.amount-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1976d2;
+  line-height: 1;
+}
+
+.additional-info {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #666;
+}
+
+.info-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #999;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.action-btn {
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.action-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-icon-wrapper {
+  margin-bottom: 24px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  color: #ddd;
+}
+
+.empty-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.empty-description {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 32px 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-action-btn {
+  border-radius: 25px;
+  padding: 0 32px;
+  height: 48px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.empty-action-btn mat-icon {
+  margin-right: 8px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .loan-container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .loan-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-summary {
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .amount-value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-wrapper {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stats-summary {
+    gap: 20px;
+  }
+
+  .loan-card-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+}

@@ -1,0 +1,24 @@
+
+<mat-card class="loan-detail-card">
+  <mat-card-title>Get Loan Detail by ID</mat-card-title>
+  <mat-card-content>
+    <mat-form-field class="full-width">
+      <mat-label>Loan ID</mat-label>
+      <input matInput [(ngModel)]="loanId" placeholder="Enter Loan ID" />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="fetchLoan()">Fetch Loan</button>
+
+    <div *ngIf="loan" class="loan-result">
+      <mat-list>
+        <mat-list-item><strong>Loan ID:</strong> {{ loan.loanId }}</mat-list-item>
+        <mat-list-item><strong>User ID:</strong> {{ loan.userId }}</mat-list-item>
+        <mat-list-item><strong>Amount:</strong> ₹{{ loan.amount }}</mat-list-item>
+        <mat-list-item><strong>Status:</strong> {{ loan.status }}</mat-list-item>
+        <mat-list-item><strong>Tenure:</strong> {{ loan.tenureInMonths }} months</mat-list-item>
+        <mat-list-item><strong>Interest:</strong> {{ loan.interestRate }}%</mat-list-item>
+        <mat-list-item><strong>Type:</strong> {{ loan.loanType }}</mat-list-item>
+      </mat-list>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,242 @@
+.user-management-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+h2 {
+    color: #007bff;
+    margin-bottom: 25px;
+    font-size: 2em;
+}
+
+.refresh-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.refresh-button:hover {
+    background-color: #0056b3;
+}
+
+.loading-message,
+.no-users-message {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #6c757d;
+}
+
+.message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.95em;
+    text-align: center;
+    width: 100%;
+    max-width: 900px;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.user-list-section {
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    padding: 20px;
+}
+
+h3 {
+    color: #343a40;
+    padding-bottom: 15px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+}
+
+th,
+td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 0.9em;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #495057;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+.actions {
+    white-space: nowrap;
+}
+
+.action-button {
+    padding: 8px 12px;
+    font-size: 0.85em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 5px;
+}
+
+.action-button.edit {
+    background-color: #17a2b8;
+    /* Cyan */
+    color: #fff;
+}
+
+.action-button.edit:hover {
+    background-color: #138496;
+}
+
+.action-button.delete {
+    background-color: #dc3545;
+    /* Red */
+    color: #fff;
+}
+
+.action-button.delete:hover {
+    background-color: #c82333;
+}
+
+/* Status styling (copied from KYC Management) */
+.status-pending {
+    color: #ffc107;
+    /* Yellow/Orange */
+    font-weight: bold;
+}
+
+.status-verified {
+    color: #28a745;
+    /* Green */
+    font-weight: bold;
+}
+
+.status-rejected {
+    color: #dc3545;
+    /* Red */
+    font-weight: bold;
+}
+
+/* Edit User Modal Styling */
+.edit-user-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.modal-content h3 {
+    color: #007bff;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.modal-content .form-group {
+    margin-bottom: 15px;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="date"],
+.modal-content input[type="tel"],
+.modal-content select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+
+.modal-actions {
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-actions .action-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
+}
+
+.modal-actions .action-button.save {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.modal-actions .action-button.save:hover {
+    background-color: #218838;
+}
+
+.modal-actions .action-button.cancel {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.modal-actions .action-button.cancel:hover {
+    background-color: #5a6268;
+}

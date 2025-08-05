@@ -1,92 +1,108 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router'; // Import RouterLink
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-banking-features',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  template: `
-    <div class="banking-features-container">
-  <h2>Full Banking Features</h2>
-  <p>Welcome to the core banking functionalities!</p>
-  <p>Here you can manage your accounts, make transactions, apply for loans, and more.</p>
-  
-  <div class="feature-links">
-    <a routerLink="/accounts" class="feature-button">Manage Accounts</a>
-    <a routerLink="/transactions/history" class="feature-button">View Transactions</a> <!-- Updated routerLink -->
-    <a routerLink="/transactions/deposit" class="feature-button">Deposit Funds</a> <!-- New Button -->
-    <a routerLink="/transactions/withdraw" class="feature-button">Withdraw Funds</a> <!-- New Button -->
-    <a routerLink="/transactions/transfer" class="feature-button">Transfer Funds</a> <!-- New Button -->
-    <a routerLink="/loans" class="feature-button">Apply for Loans</a>
-    <a routerLink="/cards" class="feature-button">Manage Cards</a>
-  </div>
-
-  <button routerLink="/dashboard" class="back-button">Back to Dashboard</button>
-</div>
-  `,
-  styles: [`
-    .banking-features-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px;
-      font-family: Arial, sans-serif;
-      background-color: #e9f5ff; /* Light blue background */
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
-      margin: 40px auto;
-      max-width: 900px;
-      text-align: center;
-    }
-    h2 {
-      color: #0056b3;
-      margin-bottom: 20px;
-      font-size: 2.2em;
-    }
-    p {
-      font-size: 1.1em;
-      color: #333;
-      margin-bottom: 25px;
-    }
-    .feature-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 30px;
-      margin-bottom: 40px;
-    }
-    .feature-button {
-      background-color: #007bff;
-      color: #fff;
-      padding: 15px 25px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 1.1em;
-      font-weight: bold;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .feature-button:hover {
-      background-color: #0056b3;
-      transform: translateY(-2px);
-    }
-    .back-button {
-      background-color: #6c757d;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 30px;
-    }
-    .back-button:hover {
-      background-color: #5a6268;
-    }
-  `]
+  templateUrl: './banking-features.component.html',
+  styleUrls: ['./banking-features.component.css']
 })
-export class BankingFeaturesComponent {
+export class BankingFeaturesComponent implements OnInit {
 
+  sidebarCollapsed = false;
+
+  bankingServices = [
+    {
+      title: 'Account Management',
+      icon: 'fas fa-user-circle',
+      route: '/accounts',
+      description: 'Manage your bank accounts and view account details'
+    },
+    {
+      title: 'Transaction History',
+      icon: 'fas fa-history',
+      route: '/transactions/history',
+      description: 'View your complete transaction history'
+    },
+    {
+      title: 'Deposit Funds',
+      icon: 'fas fa-plus-circle',
+      route: '/transactions/deposit',
+      description: 'Deposit money into your account'
+    },
+    {
+      title: 'Withdraw Funds',
+      icon: 'fas fa-minus-circle',
+      route: '/transactions/withdraw',
+      description: 'Withdraw money from your account'
+    },
+    {
+      title: 'Transfer Funds',
+      icon: 'fas fa-exchange-alt',
+      route: '/transactions/transfer',
+      description: 'Transfer money between accounts'
+    },
+    {
+      title: 'Loan History',
+      icon: 'fas fa-file-invoice-dollar',
+      route: '/loans/history',
+      description: 'View your loan history and details'
+    },
+    {
+      title: 'Apply for Loan',
+      icon: 'fas fa-hand-holding-usd',
+      route: '/loans/apply',
+      description: 'Apply for personal or business loans'
+    },
+    {
+      title: 'Manage Cards',
+      icon: 'fas fa-credit-card',
+      route: '/cards/manage',
+      description: 'Manage your debit and credit cards'
+    },
+    {
+      title: 'Issue New Card',
+      icon: 'fas fa-plus-square',
+      route: '/cards/issue',
+      description: 'Request a new debit or credit card'
+    }
+  ];
+
+  quickActions = [
+    {
+      title: 'Quick Transfer',
+      icon: 'fas fa-bolt',
+      route: '/transactions/transfer',
+      color: 'primary'
+    },
+    {
+      title: 'Bill Pay',
+      icon: 'fas fa-receipt',
+      route: '/bills/pay',
+      color: 'success'
+    },
+    {
+      title: 'Mobile Deposit',
+      icon: 'fas fa-mobile-alt',
+      route: '/transactions/mobile-deposit',
+      color: 'info'
+    },
+    {
+      title: 'ATM Locator',
+      icon: 'fas fa-map-marker-alt',
+      route: '/atm-locator',
+      color: 'warning'
+    }
+  ];
+
+  constructor() { }
+
+  ngOnInit(): void {
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
 }

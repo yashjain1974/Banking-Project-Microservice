@@ -33,7 +33,8 @@ public class Loan {
 
 	@Column(name = "interest_rate", nullable = false,columnDefinition = "NUMBER(5,2)")
 	private Double interestRate;
-
+	
+	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private LoanStatus status;
 

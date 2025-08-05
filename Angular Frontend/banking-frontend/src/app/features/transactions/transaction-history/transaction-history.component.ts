@@ -1,5 +1,3 @@
-// src/app/features/transactions/transaction-history/transaction-history.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // For dropdown selection
@@ -8,6 +6,7 @@ import { AccountService } from '../../accounts/account.service'; // To get user'
 import { AccountResponse } from '../../../shared/models/account.model';
 import { TransactionResponse, TransactionStatus, TransactionType } from '../../../shared/models/transaction.model';
 import { AuthService } from '../../../core/services/auth.service';
+
 
 
 
@@ -47,7 +46,7 @@ export class TransactionHistoryComponent implements OnInit {
     if (userId) {
       this.accountService.getAccountsByUserId(userId).subscribe(
         (data) => {
-          this.accounts = data;
+          this.accounts = data || []; // FIX: Assign data, or an empty array if data is null/undefined
           this.loading = false;
           if (this.accounts.length > 0) {
             this.selectedAccountId = this.accounts[0].accountId; // Select first account by default
@@ -75,9 +74,9 @@ export class TransactionHistoryComponent implements OnInit {
       this.successMessage = null;
       this.transactions = []; // Clear previous transactions
 
-      this.transactionService?.getTransactionsByAccountId(this?.selectedAccountId)?.subscribe(
+      this.transactionService.getTransactionsByAccountId(this.selectedAccountId).subscribe(
         (data) => {
-          this.transactions = data;
+          this.transactions = data || []; // FIX: Assign data, or an empty array if data is null/undefined
           this.loading = false;
           if (this.transactions.length === 0) {
             this.successMessage = 'No transactions found for this account.';

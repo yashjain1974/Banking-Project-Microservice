@@ -1,0 +1,72 @@
+<div class="account-management-container">
+    <h2>Account Management</h2>
+    <button (click)="logout()" class="logout-button">Logout</button>
+
+    <div class="search-section">
+        <h3>Search Accounts</h3>
+        <form (ngSubmit)="onSearch()">
+            <div class="form-group">
+                <label for="searchType">Search By:</label>
+                <select id="searchType" name="searchType" [(ngModel)]="searchType">
+                    <option value="userId">User ID</option>
+                    <option value="accountId">Account ID</option>
+                    <option value="accountNumber">Account Number</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="searchQuery">Query:</label>
+                <input type="text" id="searchQuery" name="searchQuery" [(ngModel)]="searchQuery"
+                    placeholder="Enter ID or Number">
+            </div>
+            <button type="submit" class="search-button">Search</button>
+        </form>
+    </div>
+
+    <div *ngIf="loading" class="loading-message">Searching for accounts...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div *ngIf="!loading && foundAccounts.length > 0" class="account-results-section">
+        <h3>Search Results ({{ foundAccounts.length }})</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Account ID</th>
+                    <th>User ID</th>
+                    <th>Account Number</th>
+                    <th>Type</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let account of foundAccounts">
+                    <td>{{ account.accountId | slice:0:8 }}...</td>
+                    <td>{{ account.userId | slice:0:8 }}...</td>
+                    <td>{{ account.accountNumber }}</td>
+                    <td>{{ account.accountType }}</td>
+                    <td>{{ account.balance | currency:'INR':'symbol':'1.2-2' }}</td>
+                    <td><span [ngClass]="getAccountStatusClass(account.status)">{{ account.status }}</span></td>
+                    <td class="actions">
+                        <button (click)="updateAccountStatus(account.accountId, AccountStatus.ACTIVE)"
+                            [disabled]="account.status === AccountStatus.ACTIVE"
+                            class="action-button active">Activate</button>
+                        <button (click)="updateAccountStatus(account.accountId, AccountStatus.BLOCKED)"
+                            [disabled]="account.status === AccountStatus.BLOCKED"
+                            class="action-button block">Block</button>
+                        <button (click)="updateAccountStatus(account.accountId, AccountStatus.CLOSED)"
+                            [disabled]="account.status === AccountStatus.CLOSED"
+                            class="action-button close">Close</button>
+                        <button (click)="deleteAccount(account.accountId)" class="action-button delete">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && foundAccounts.length === 0 && !successMessage && searchQuery.trim()"
+        class="no-results-message">
+        <p>No accounts found matching your search query.</p>
+    </div>
+</div>

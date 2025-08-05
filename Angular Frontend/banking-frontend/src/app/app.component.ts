@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { BrowserModule } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',

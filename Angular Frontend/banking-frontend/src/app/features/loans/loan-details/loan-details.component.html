@@ -1,0 +1,45 @@
+<div class="loan-details-container">
+    <h2>Your Loan Applications</h2>
+    <button (click)="loadUserLoans()" class="refresh-button">Refresh Loans</button>
+
+    <div *ngIf="loading" class="loading-message">Loading your loan applications...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div *ngIf="!loading && userLoans.length > 0" class="loan-list">
+        <h3>Existing Loan Applications ({{ userLoans.length }})</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Loan ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Tenure (Months)</th>
+                    <th>Interest Rate</th>
+                    <th>Application Date</th>
+                    <th>Status</th>
+                    <th>EMI</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let loan of userLoans">
+                    <td>{{ loan.loanId | slice:0:8 }}...</td>
+                    <td>{{ loan.loanType }}</td>
+                    <td>{{ loan.amount | currency:'INR':'symbol':'1.2-2' }}</td>
+                    <td>{{ loan.tenureInMonths }}</td>
+                    <td>{{ loan.interestRate | number:'1.2-2' }}%</td>
+                    <td>{{ loan.applicationDate | date:'short' }}</td>
+                    <td><span [ngClass]="getLoanStatusClass(loan.status)">{{ loan.status }}</span></td>
+                    <td>
+                        <button (click)="calculateEmiForLoan(loan.loanId)" class="emi-button">Calculate EMI</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && userLoans.length === 0 && !successMessage" class="no-loans-message">
+        <p>You have no loan applications. Apply for one now!</p>
+        <a routerLink="/loans/apply" class="apply-loan-link">Apply for Loan</a>
+    </div>
+</div>

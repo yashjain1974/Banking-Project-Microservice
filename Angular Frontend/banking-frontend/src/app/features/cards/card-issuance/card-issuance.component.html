@@ -1,0 +1,53 @@
+<div class="card-issuance-container">
+    <h2>Issue New Card</h2>
+
+    <div *ngIf="loading" class="loading-message">Processing card issuance...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div *ngIf="!loading && accounts.length > 0" class="card-form-section">
+        <form (ngSubmit)="onSubmit()" #cardIssuanceForm="ngForm">
+            <div class="form-group">
+                <label for="accountId">Link to Account:</label>
+                <select id="accountId" name="accountId" [(ngModel)]="cardForm.accountId" required>
+                    <option *ngFor="let account of accounts" [value]="account.accountId">
+                        {{ account.accountNumber }} ({{ account.accountType }} - Balance: {{ account.balance |
+                        currency:'INR':'symbol':'1.2-2' }})
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cardType">Card Type:</label>
+                <select id="cardType" name="cardType" [(ngModel)]="cardForm.cardType" required>
+                    <option *ngFor="let type of cardTypes" [value]="type">{{ type }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="transactionLimit">Transaction Limit (INR):</label>
+                <input type="number" id="transactionLimit" name="transactionLimit"
+                    [(ngModel)]="cardForm.transactionLimit" required min="1" step="any">
+            </div>
+
+            <div class="form-group">
+                <label for="issueDate">Issue Date:</label>
+                <input type="date" id="issueDate" name="issueDate" [(ngModel)]="cardForm.issueDate" required readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="expiryDate">Expiry Date:</label>
+                <input type="date" id="expiryDate" name="expiryDate" [(ngModel)]="cardForm.expiryDate" required
+                    readonly>
+            </div>
+
+            <button type="submit" [disabled]="!cardIssuanceForm.valid || !cardForm.accountId" class="issue-button">Issue
+                Card</button>
+        </form>
+    </div>
+
+    <div *ngIf="!loading && accounts.length === 0" class="no-accounts-message">
+        <p>You need an active account to issue a card. Please create one first.</p>
+        <a routerLink="/accounts" class="create-account-link">Go to Accounts</a>
+    </div>
+</div>

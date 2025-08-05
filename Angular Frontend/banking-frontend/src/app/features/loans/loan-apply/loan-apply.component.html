@@ -1,0 +1,44 @@
+<mat-card class="loan-form-card">
+  <mat-card-title>Apply for a Loan</mat-card-title>
+  <mat-card-content>
+    <form (ngSubmit)="applyLoan()">
+      <mat-form-field class="full-width">
+        <mat-label>User ID</mat-label>
+        <input matInput [(ngModel)]="loan.userId" name="userId" required />
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Amount</mat-label>
+        <input matInput type="number" [(ngModel)]="loan.amount" name="amount" required />
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Tenure (months)</mat-label>
+        <input matInput type="number" [(ngModel)]="loan.tenureInMonths" name="tenureInMonths" required />
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Interest Rate (%)</mat-label>
+        <input matInput type="number" [(ngModel)]="loan.interestRate" name="interestRate" required />
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Loan Type</mat-label>
+        <mat-select [(ngModel)]="loan.loanType" name="loanType" required>
+          <mat-option value="HOME">Home</mat-option>
+          <mat-option value="CAR">Car</mat-option>
+          <mat-option value="PERSONAL">Personal</mat-option>
+          <mat-option value="EDUCATION">Education</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+
+      <button mat-raised-button color="primary" type="submit">Apply</button>
+    </form>
+  </mat-card-content>
+
+  <mat-card-footer *ngIf="response">
+    <strong>Loan ID:</strong> {{ response.loanId }}<br />
+    <strong>Status:</strong> {{ response.status }}
+  </mat-card-footer>
+</mat-card>

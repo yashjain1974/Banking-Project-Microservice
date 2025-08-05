@@ -1,0 +1,99 @@
+<div class="user-management-container">
+  <h2>User Profile Management</h2>
+  <button (click)="loadAllUsers()" class="refresh-button">Refresh Users</button>
+
+  <div *ngIf="loading" class="loading-message">Loading user profiles...</div>
+
+  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+  <div *ngIf="!loading && allUsers.length > 0" class="user-list-section">
+    <h3>All User Profiles ({{ allUsers.length }})</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th>Role</th>
+          <th>KYC Status</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of allUsers">
+          <td>{{ user.userId | slice:0:8 }}...</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.role }}</td>
+          <td><span [ngClass]="{'status-pending': user.kycStatus === 'PENDING', 'status-verified': user.kycStatus === 'VERIFIED', 'status-rejected': user.kycStatus === 'REJECTED'}">{{ user.kycStatus }}</span></td>
+          <td>{{ user.createdAt | date:'short' }}</td>
+          <td class="actions">
+            <button (click)="editUser(user)" class="action-button edit">Edit</button>
+            <button (click)="deleteUser(user.userId, user.username)" class="action-button delete">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && allUsers.length === 0 && !successMessage" class="no-users-message">
+    <p>No user profiles found in the system.</p>
+  </div>
+
+  <!-- Edit User Modal/Form -->
+  <div *ngIf="selectedUser" class="edit-user-modal">
+    <div class="modal-content">
+      <h3>Edit User: {{ selectedUser.username }}</h3>
+      <form (ngSubmit)="saveUserChanges()">
+        <div class="form-group">
+          <label for="editUsername">Username:</label>
+          <input type="text" id="editUsername" name="username" [(ngModel)]="editForm.username" required>
+        </div>
+        <div class="form-group">
+          <label for="editEmail">Email:</label>
+          <input type="email" id="editEmail" name="email" [(ngModel)]="editForm.email" required>
+        </div>
+        <div class="form-group">
+          <label for="editFirstName">First Name:</label>
+          <input type="text" id="editFirstName" name="firstName" [(ngModel)]="editForm.firstName">
+        </div>
+        <div class="form-group">
+          <label for="editLastName">Last Name:</label>
+          <input type="text" id="editLastName" name="lastName" [(ngModel)]="editForm.lastName">
+        </div>
+        <div class="form-group">
+          <label for="editDateOfBirth">Date of Birth:</label>
+          <input type="date" id="editDateOfBirth" name="dateOfBirth" [(ngModel)]="editForm.dateOfBirth">
+        </div>
+        <div class="form-group">
+          <label for="editAddress">Address:</label>
+          <input type="text" id="editAddress" name="address" [(ngModel)]="editForm.address">
+        </div>
+        <div class="form-group">
+          <label for="editPhoneNumber">Phone Number:</label>
+          <input type="text" id="editPhoneNumber" name="phoneNumber" [(ngModel)]="editForm.phoneNumber">
+        </div>
+        <div class="form-group">
+          <label for="editRole">Role:</label>
+          <select id="editRole" name="role" [(ngModel)]="editForm.role">
+            <option *ngFor="let role of userRoles" [value]="role">{{ role }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editKycStatus">KYC Status:</label>
+          <select id="editKycStatus" name="kycStatus" [(ngModel)]="editForm.kycStatus">
+            <option *ngFor="let status of kycStatuses" [value]="status">{{ status }}</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="action-button save">Save Changes</button>
+          <button type="button" (click)="cancelEdit()" class="action-button cancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

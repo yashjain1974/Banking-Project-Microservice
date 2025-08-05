@@ -1,0 +1,47 @@
+<div class="card-management-container">
+  <h2>Your Cards</h2>
+  <button (click)="loadUserCardsAndAccounts()" class="refresh-button">Refresh Cards</button>
+
+  <div *ngIf="loading" class="loading-message">Loading your cards...</div>
+  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+  <div *ngIf="!loading && userCards.length > 0" class="card-list">
+    <h3>Existing Cards ({{ userCards.length }})</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Card Number</th>
+          <th>Type</th>
+          <th>Linked Account</th>
+          <th>Issue Date</th>
+          <th>Expiry Date</th>
+          <th>Limit</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let card of userCards">
+          <td>{{ card.cardNumber | slice:0:4 }} **** **** {{ card.cardNumber | slice:-4 }}</td>
+          <td>{{ card.cardType }}</td>
+          <td>{{ getAccountNumber(card.accountId) }}</td>
+          <td>{{ card.issueDate | date:'shortDate' }}</td>
+          <td>{{ card.expiryDate | date:'shortDate' }}</td>
+          <td>{{ card.transactionLimit | currency:'INR':'symbol':'1.2-2' }}</td>
+          <td><span [ngClass]="getCardStatusClass(card.status)">{{ card.status }}</span></td>
+          <td class="actions">
+            <button (click)="blockCard(card.cardId, card.cardNumber)" [disabled]="card.status === CardStatus.BLOCKED" class="action-button block">Block</button>
+            <button (click)="unblockCard(card.cardId, card.cardNumber)" [disabled]="card.status === CardStatus.ACTIVE" class="action-button unblock">Unblock</button>
+            <button (click)="openUpdateLimitModal(card)" class="action-button limit">Update Limit</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && userCards.length === 0 && !successMessage" class="no-cards-message">
+    <p>You have no cards issued. Issue a new card now!</p>
+    <a routerLink="/cards/issue" class="issue-card-link">Issue Card</a>
+  </div>
+</div>

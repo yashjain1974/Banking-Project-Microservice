@@ -1,1 +1,210 @@
-<p>banking-features works!</p>
+<div class="banking-layout">
+    <!-- Sidebar -->
+    <div class="sidebar" [class.collapsed]="sidebarCollapsed">
+        <div class="sidebar-header">
+            <h4 class="sidebar-title">
+                <i class="fas fa-university me-2"></i>
+                <span *ngIf="!sidebarCollapsed">Banking Services</span>
+            </h4>
+            <button class="btn btn-link sidebar-toggle" (click)="toggleSidebar()">
+                <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed"
+                    [class.fa-chevron-right]="sidebarCollapsed"></i>
+            </button>
+        </div>
+
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <h6 class="menu-title" *ngIf="!sidebarCollapsed">Main Services</h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item" *ngFor="let service of bankingServices">
+                        <a [routerLink]="service.route" class="nav-link">
+                            <i [class]="service.icon + ' me-2'"></i>
+                            <span *ngIf="!sidebarCollapsed">{{ service.title }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="menu-section" *ngIf="!sidebarCollapsed">
+                <h6 class="menu-title">Quick Actions</h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item" *ngFor="let action of quickActions">
+                        <a [routerLink]="action.route" class="nav-link quick-action">
+                            <i [class]="action.icon + ' me-2'"></i>
+                            <span>{{ action.title }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" [class.expanded]="sidebarCollapsed">
+        <!-- Header -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="page-header">
+                            <h1 class="page-title">
+                                <i class="fas fa-landmark me-3"></i>
+                                Full Banking Features
+                            </h1>
+                            <p class="page-subtitle">Welcome to your comprehensive banking dashboard</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Body -->
+        <div class="content-body">
+            <div class="container-fluid">
+                <!-- Welcome Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="welcome-card">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    <i class="fas fa-hand-paper me-2 text-primary"></i>
+                                    Welcome Back!
+                                </h3>
+                                <p class="card-text">
+                                    Access all your banking services in one place. Manage accounts, transfer funds,
+                                    apply for loans,
+                                    and explore our comprehensive financial solutions designed to meet your needs.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="section-title">
+                            <i class="fas fa-bolt me-2"></i>
+                            Quick Actions
+                        </h4>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3" *ngFor="let action of quickActions">
+                        <div class="quick-action-card">
+                            <a [routerLink]="action.route" class="text-decoration-none">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <div class="action-icon" [class]="'bg-' + action.color">
+                                            <i [class]="action.icon"></i>
+                                        </div>
+                                        <h6 class="card-title mt-3">{{ action.title }}</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Banking Services -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="section-title">
+                            <i class="fas fa-cogs me-2"></i>
+                            Banking Services
+                        </h4>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4" *ngFor="let service of bankingServices">
+                        <div class="service-card">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="service-header">
+                                        <div class="service-icon">
+                                            <i [class]="service.icon"></i>
+                                        </div>
+                                        <h5 class="card-title">{{ service.title }}</h5>
+                                    </div>
+                                    <p class="card-text">{{ service.description }}</p>
+                                    <a [routerLink]="service.route" class="btn btn-primary btn-sm">
+                                        Access Service
+                                        <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Dashboard -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="section-title">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Account Overview
+                        </h4>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stat-card">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="stat-icon bg-success">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                    <h3 class="stat-number">$12,450</h3>
+                                    <p class="stat-label">Available Balance</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stat-card">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="stat-icon bg-info">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <h3 class="stat-number">3</h3>
+                                    <p class="stat-label">Active Cards</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stat-card">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="stat-icon bg-warning">
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <h3 class="stat-number">1</h3>
+                                    <p class="stat-label">Active Loans</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="stat-card">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="stat-icon bg-danger">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </div>
+                                    <h3 class="stat-number">15</h3>
+                                    <p class="stat-label">This Month Transactions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back to Dashboard -->
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <button routerLink="/dashboard" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,58 @@
+
+<mat-card class="loan-card">
+  <mat-card-title >All Loans</mat-card-title>
+  <mat-card-content>
+    <button mat-raised-button color="primary" (click)="fetchLoans()">Get Loans</button>
+    <br><br>
+    <p *ngIf="!loans.length" class="mt-3">No loans fetched yet.</p>
+  </mat-card-content>
+</mat-card>
+
+<div class="loan-container">
+  <div class="header-section">
+    <div class="title-wrapper">
+  </div>
+
+
+  <div *ngIf="loans.length; else emptyState" class="loan-grid content-section">
+    <mat-card *ngFor="let loan of loans" class="loan-card" [ngClass]="loan.status.toLowerCase()">
+      <div class="loan-card-header">
+        <div class="loan-id-section">
+          <mat-icon class="loan-icon">credit_score</mat-icon>
+          <div class="loan-id">
+            <span class="id-label">Loan ID: </span>
+            <span class="id-value">{{ loan.loanId }}</span>
+          </div>
+        </div>
+        <div class="status-badge" [ngClass]="loan.status.toLowerCase()">
+          <mat-icon class="status-icon">
+            {{ loan.status === 'APPROVED' ? 'check_circle' : loan.status === 'PENDING' ? 'hourglass_empty' : 'cancel' }}
+          </mat-icon>
+          {{ loan.status }}
+        </div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <div class="loan-details">
+        <div class="amount-section">
+          <div class="amount-label">Amount</div>
+          <div class="amount-value">₹{{ loan.amount }}</div>
+        </div>
+        <div class="additional-info">
+          <div class="info-item">
+            <mat-icon class="info-icon">schedule</mat-icon>
+            Duration: {{ loan.tenureInMonths }} months
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <div class="empty-icon-wrapper">
+      </div>
+    </div>
+  </ng-template>
+</div>
