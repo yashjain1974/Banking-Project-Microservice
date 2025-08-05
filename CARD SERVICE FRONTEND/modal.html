@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction Limit Modal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="modal.css">
+</head>
+<body>
+  <!-- Transaction Limit Modal -->
+  <div id="transactionLimitModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Update Transaction Limit</h2>
+        <span class="close" onclick="closeTransactionLimitModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="account-info">
+          <i class="fas fa-credit-card"></i>
+          <span>Account ID: <strong id="modalAccountId">ACC-987654</strong></span>
+        </div>
+        
+        <div class="input-group">
+          <label for="newLimit">New Transaction Limit</label>
+          <div class="input-wrapper">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="newLimit" placeholder="Enter new limit" min="1000" max="1000000" step="1000">
+          </div>
+          <div class="input-help">
+            <small>Minimum: ₹1,000 | Maximum: ₹10,00,000</small>
+          </div>
+        </div>
+
+        <div class="current-limit">
+          <span>Current Limit: <strong id="currentLimitDisplay">₹1,00,000</strong></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="closeTransactionLimitModal()">Cancel</button>
+        <button class="btn btn-update" onclick="updateTransactionLimit()">Update Limit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div id="successToast" class="toast">
+    <i class="fas fa-check-circle"></i>
+    <span>Transaction limit updated successfully!</span>
+  </div>
+
+  <!-- Demo button to open modal -->
+  <div style="padding: 50px; text-align: center;">
+    <button onclick="openTransactionLimitModal('ACC-987654', '100000')" 
+            style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+      Open Transaction Limit Modal
+    </button>
+  </div>
+
+  <script>
+    let currentAccountId = '';
+    let currentLimitValue = '';
+
+    function openTransactionLimitModal(accountId, currentLimit) {
+      currentAccountId = accountId;
+      currentLimitValue = currentLimit;
+      
+      document.getElementById('modalAccountId').textContent = accountId;
+      document.getElementById('currentLimitDisplay').textContent = '₹' + formatNumber(currentLimit);
+      document.getElementById('newLimit').value = currentLimit;
+      document.getElementById('transactionLimitModal').style.display = 'block';
+      
+      // Focus on input after modal opens
+      setTimeout(() => {
+        document.getElementById('newLimit').focus();
+        document.getElementById('newLimit').select();
+      }, 100);
+    }
+
+    function closeTransactionLimitModal() {
+      document.getElementById('transactionLimitModal').style.display = 'none';
+      document.getElementById('newLimit').value = '';
+    }
+
+    function updateTransactionLimit() {
+      const newLimit = document.getElementById('newLimit').value;
+      
+      if (!newLimit || newLimit < 1000 || newLimit > 1000000) {
+        alert('Please enter a valid limit between ₹1,000 and ₹10,00,000');
+        return;
+      }
+
+      // Update the current limit display (you can modify this to update your main page)
+      document.getElementById('currentLimitDisplay').textContent = '₹' + formatNumber(newLimit);
+      
+      closeTransactionLimitModal();
+      showSuccessToast();
+    }
+
+    function formatNumber(num) {
+      return parseInt(num).toLocaleString('en-IN');
+    }
+
+    function showSuccessToast() {
+      const toast = document.getElementById('successToast');
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('transactionLimitModal');
+      if (event.target === modal) {
+        closeTransactionLimitModal();
+      }
+    }
+
+    // Handle Enter key in input
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('newLimit').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          updateTransactionLimit();
+        }
+      });
+
+      // Handle Escape key to close modal
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeTransactionLimitModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

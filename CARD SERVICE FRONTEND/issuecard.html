@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Credit Card Issuance Form</title>
+    <link rel="stylesheet" href="issuecard.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Issue Credit Card</h1>
+        <p>Complete the form below to issue your new credit card</p>
+      </div>
+
+      <div class="form-container">
+        <form class="credit-card-form">
+          <!-- Account to be Linked -->
+          <div class="form-group">
+            <label for="account">Account to be Linked</label>
+            <select id="account" name="account" required>
+              <option value="">Select Account</option>
+              <option value="ACC-987654">ACC-987654 - Savings Account</option>
+              <option value="ACC-123456">ACC-123456 - Current Account</option>
+              <option value="ACC-456789">ACC-456789 - Salary Account</option>
+            </select>
+          </div>
+
+          <!-- Card Type -->
+          <div class="form-group">
+            <label>Card Type</label>
+            <div class="card-type-options">
+              <div class="card-option">
+                <input type="radio" id="visa" name="cardType" value="visa" required>
+                <label for="visa" class="card-label">
+                  <div class="card-icon visa">VISA</div>
+                  <span>Visa</span>
+                </label>
+              </div>
+              <div class="card-option">
+                <input type="radio" id="mastercard" name="cardType" value="mastercard" required>
+                <label for="mastercard" class="card-label">
+                  <div class="card-icon mastercard">MC</div>
+                  <span>Mastercard</span>
+                </label>
+              </div>
+              <div class="card-option">
+                <input type="radio" id="rupay" name="cardType" value="rupay" required>
+                <label for="rupay" class="card-label">
+                  <div class="card-icon rupay">RuPay</div>
+                  <span>RuPay</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Limit -->
+          <div class="form-group">
+            <label for="transactionLimit">Transaction Limit</label>
+            <div class="input-wrapper">
+              <span class="currency-symbol">₹</span>
+              <input type="number" id="transactionLimit" name="transactionLimit" placeholder="Enter amount (e.g., 100000)" min="1000" max="10000000" step="1000" required>
+            </div>
+          </div>
+
+          <!-- Issue Date -->
+          <div class="form-group">
+            <label for="issueDate">Issue Date</label>
+            <input type="date" id="issueDate" name="issueDate" required>
+          </div>
+
+          <!-- Expiry Date -->
+          <div class="form-group">
+            <label for="expiryDate">Expiry Date</label>
+            <input type="date" id="expiryDate" name="expiryDate" required>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="submit-btn">
+            Issue Credit Card
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
