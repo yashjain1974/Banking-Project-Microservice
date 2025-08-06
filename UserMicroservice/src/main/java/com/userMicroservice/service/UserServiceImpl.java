@@ -14,6 +14,7 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate; // Import KafkaTemplate
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import com.userMicroservice.dto.KycStatusUpdateRequest;
 import com.userMicroservice.dto.UserCreationRequest;
 import com.userMicroservice.dto.UserResponse;
 import com.userMicroservice.dto.UserUpdateRequest;
+import com.userMicroservice.event.KycStatusUpdatedEvent;
 import com.userMicroservice.exceptions.UserCreationException;
 import com.userMicroservice.exceptions.UserNotFoundException;
 import com.userMicroservice.exceptions.UserProcessingException;
@@ -30,31 +32,28 @@ import com.userMicroservice.model.KycStatus;
 import com.userMicroservice.model.User;
 import com.userMicroservice.model.UserRole;
 
-import jakarta.ws.rs.core.Response; // For Keycloak Admin API response
+import jakarta.ws.rs.core.Response;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final Keycloak keycloakAdminClient;
+    private final KafkaTemplate<String, KycStatusUpdatedEvent> kafkaTemplate; // Inject KafkaTemplate
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, Keycloak keycloakAdminClient) {
+    public UserServiceImpl(UserRepository userRepository, Keycloak keycloakAdminClient, KafkaTemplate<String, KycStatusUpdatedEvent> kafkaTemplate) { // Add KafkaTemplate
         this.userRepository = userRepository;
         this.keycloakAdminClient = keycloakAdminClient;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     /**
-     * Creates a new user profile. This involves creating the user in Keycloak first,
-     * then storing additional profile data in the User Microservice's database.
-     * @param request The UserCreationRequest DTO.
-     * @return The created UserResponse DTO.
-     * @throws UserCreationException if user creation fails (e.g., duplicate username/email, Keycloak creation error).
+     * Creates a new user profile.
      */
     @Override
     @Transactional
     public UserResponse createUserProfile(UserCreationRequest request) {
-        // 1. Basic validation for uniqueness in local DB before Keycloak call
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new UserCreationException("User with username '" + request.getUsername() + "' already exists.");
         }
@@ -67,8 +66,8 @@ public class UserServiceImpl implements UserService {
         keycloakUser.setEmail(request.getEmail());
         keycloakUser.setFirstName(request.getFirstName());
         keycloakUser.setLastName(request.getLastName());
-        keycloakUser.setEnabled(true); // Enable user by default
-        keycloakUser.setEmailVerified(true); // For testing, manage verification flow in production
+        keycloakUser.setEnabled(true);
+        keycloakUser.setEmailVerified(true);
 
         CredentialRepresentation passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
@@ -86,8 +85,7 @@ public class UserServiceImpl implements UserService {
                 String keycloakUserId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
                 System.out.println("User created in Keycloak with ID: " + keycloakUserId);
 
-                // --- ROBUST ROLE ASSIGNMENT IN KEYCLOAK ---
-                String roleName = request.getRole().name(); // e.g., "CUSTOMER"
+                String roleName = request.getRole().name();
                 try {
                     RoleRepresentation roleToAdd = realmResource.roles().get(roleName).toRepresentation();
                     if (roleToAdd != null) {
@@ -101,7 +99,6 @@ public class UserServiceImpl implements UserService {
                     System.err.println("ERROR: Failed to assign realm role '" + roleName + "' in Keycloak for user " + keycloakUserId + ": " + roleError.getMessage());
                     roleError.printStackTrace();
                 }
-                // --- END ROBUST ROLE ASSIGNMENT ---
 
                 User user = new User();
                 user.setUserId(keycloakUserId);
@@ -111,12 +108,23 @@ public class UserServiceImpl implements UserService {
                 user.setCreatedAt(LocalDateTime.now());
                 user.setFirstName(request.getFirstName());
                 user.setLastName(request.getLastName());
-                user.setDateOfBirth(request.getDateOfBirth()); // Corrected: Assign LocalDate directly
+                user.setDateOfBirth(request.getDateOfBirth());
                 user.setAddress(request.getAddress());
                 user.setPhoneNumber(request.getPhoneNumber());
-                user.setKycStatus(KycStatus.PENDING); // New users are PENDING by default
+                user.setKycStatus(KycStatus.PENDING);
 
                 user = userRepository.save(user);
+
+                // Publish KYC status updated event (for initial PENDING status)
+                publishKycStatusUpdatedEvent(
+                    user.getUserId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    null, // Old status is null for new creation
+                    user.getKycStatus().name(),
+                    "User registered and KYC status set to PENDING."
+                );
+
                 return mapToUserResponse(user);
 
             } else if (response.getStatus() == 409) {
@@ -213,6 +221,9 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User profile not found with ID: " + userId));
 
+        // Store old status for the event
+        String oldKycStatus = existingUser.getKycStatus().name();
+
         // Validate state transitions if necessary (e.g., cannot go from REJECTED to PENDING)
         if (existingUser.getKycStatus() == KycStatus.REJECTED && request.getKycStatus() == KycStatus.PENDING) {
             throw new UserProfileUpdateException("Cannot change KYC status from REJECTED to PENDING.");
@@ -239,13 +250,21 @@ public class UserServiceImpl implements UserService {
                 } catch (Exception roleError) {
                     System.err.println("ERROR: Failed to assign CUSTOMER role in Keycloak for user " + userId + " after KYC verification: " + roleError.getMessage());
                     roleError.printStackTrace();
-                    // Decide if this error should roll back the transaction or just be logged.
-                    // For critical banking, you might throw a UserProcessingException here.
                 }
             } else if (request.getKycStatus() == KycStatus.REJECTED) {
                 // Optional: Remove CUSTOMER role or assign a "REJECTED_CUSTOMER" role in Keycloak
                 // if they previously had CUSTOMER role and are now rejected.
             }
+
+            // Publish KYC status updated event
+            publishKycStatusUpdatedEvent(
+                updatedUser.getUserId(),
+                updatedUser.getUsername(),
+                updatedUser.getEmail(),
+                oldKycStatus,
+                updatedUser.getKycStatus().name(),
+                "User KYC status changed from " + oldKycStatus + " to " + updatedUser.getKycStatus().name() + "."
+            );
 
             return mapToUserResponse(updatedUser);
         } catch (DataIntegrityViolationException e) {
@@ -299,5 +318,26 @@ public class UserServiceImpl implements UserService {
                 user.getPhoneNumber(),
                 user.getKycStatus()
         );
+    }
+
+    /**
+     * Helper method to publish KycStatusUpdatedEvent to Kafka.
+     */
+    private void publishKycStatusUpdatedEvent(String userId, String username, String email, String oldKycStatus, String newKycStatus, String message) {
+        KycStatusUpdatedEvent event = new KycStatusUpdatedEvent(
+            userId,
+            username,
+            email,
+            oldKycStatus,
+            newKycStatus,
+            LocalDateTime.now(),
+            message
+        );
+        try {
+            kafkaTemplate.send("kyc-status-events", event); // 'kyc-status-events' is the Kafka topic name
+            System.out.println("Published KYC status updated event to Kafka: User " + userId + ", Status: " + newKycStatus);
+        } catch (Exception e) {
+            System.err.println("Failed to publish KYC status updated event to Kafka for user " + userId + ": " + e.getMessage());
+        }
     }
 }

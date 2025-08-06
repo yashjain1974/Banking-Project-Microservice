@@ -1,17 +1,16 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // For ngIf, ngFor
-import { FormsModule } from '@angular/forms'; // For ngModel and form handling
-import { HttpClient } from '@angular/common/http'; // For making HTTP requests
-import { Router } from '@angular/router'; // For navigation
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
-import { environment } from '../../../../environments/environment'; // Your environment file
+import { environment } from '../../../../environments/environment';
 import { KycStatus, UserRole } from '../../../shared/models/user.model';
-
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Import FormsModule
+  imports: [CommonModule, FormsModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -19,21 +18,23 @@ export class RegisterComponent {
   // Model for the registration form data
   registrationForm = {
     username: '',
-    password: '', // Password will be sent to User Microservice for Keycloak creation
+    password: '',
     email: '',
     firstName: '',
     lastName: '',
-    dateOfBirth: '', // Will be a string, convert to LocalDate in backend
+    dateOfBirth: '',
     address: '',
     phoneNumber: '',
-    // Default values for new registrations
-    role: UserRole.CUSTOMER, // Default to CUSTOMER
-    kycStatus: KycStatus.PENDING // Default to PENDING for admin approval
+    role: UserRole.CUSTOMER,
+    kycStatus: KycStatus.PENDING
   };
 
+  // UI State variables
   errorMessage: string | null = null;
   successMessage: string | null = null;
-
+  showPassword: boolean = false;
+  agreeToTerms: boolean = false;
+  isSubmitting: boolean = false;
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -42,14 +43,20 @@ export class RegisterComponent {
    * Calls the User Microservice to create the user profile.
    */
   onSubmit(): void {
+    if (!this.agreeToTerms) {
+      this.errorMessage = 'Please agree to the terms and conditions';
+      return;
+    }
+
     this.errorMessage = null;
     this.successMessage = null;
+    this.isSubmitting = true;
 
     // Construct the request payload for the User Microservice
     const payload = {
-      userId: null, // User Microservice will generate or Keycloak will provide
+      userId: null,
       username: this.registrationForm.username,
-      password: this.registrationForm.password, // Password sent for Keycloak creation
+      password: this.registrationForm.password,
       email: this.registrationForm.email,
       role: this.registrationForm.role,
       firstName: this.registrationForm.firstName,
@@ -61,20 +68,83 @@ export class RegisterComponent {
     };
 
     // Make the POST request to the User Microservice via API Gateway
-    this.http.post(`${environment.apiUrl}/auth/register`, payload).subscribe(
-      (response) => {
+    this.http.post(`${environment.apiUrl}/auth/register`, payload).subscribe({
+      next: (response) => {
         console.log('Registration successful:', response);
         this.successMessage = 'Registration successful! Your account is pending admin approval.';
-        // Optional: Redirect to a success page or login page after a delay
+        this.isSubmitting = false;
+
+        // Redirect to login page after a delay
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 3000);
       },
-      (error) => {
+      error: (error) => {
         console.error('Registration failed:', error);
         this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
-        // Handle specific error messages from backend (e.g., duplicate username/email)
+        this.isSubmitting = false;
       }
-    );
+    });
+  }
+
+  /**
+   * Navigate to login page
+   */
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  /**
+   * Toggle password visibility
+   */
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  /**
+   * Get password strength based on criteria
+   */
+  getPasswordStrength(): 'weak' | 'medium' | 'strong' {
+    const password = this.registrationForm.password;
+
+    if (password.length === 0) return 'weak';
+
+    let score = 0;
+
+    // Length check
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+
+    // Character variety checks
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 2) return 'weak';
+    if (score <= 4) return 'medium';
+    return 'strong';
+  }
+
+  /**
+   * Get password strength text
+   */
+  getPasswordStrengthText(): string {
+    const strength = this.getPasswordStrength();
+    switch (strength) {
+      case 'weak': return 'Weak';
+      case 'medium': return 'Medium';
+      case 'strong': return 'Strong';
+      default: return '';
+    }
+  }
+
+  /**
+   * Clear error message when user starts typing
+   */
+  clearError(): void {
+    if (this.errorMessage) {
+      this.errorMessage = null;
+    }
   }
 }

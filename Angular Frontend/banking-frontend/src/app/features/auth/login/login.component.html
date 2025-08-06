@@ -1,1 +1,109 @@
-<p>login works!</p>
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Left Panel - Branding -->
+        <div class="brand-panel">
+            <div class="brand-content">
+                <div class="logo-container">
+                    <div class="logo-placeholder">
+                        <i class="fas fa-university"></i>
+                        <!-- Replace with your bank logo -->
+                        <img src="assets/images/bank-logo.png" alt="Bank Logo" class="bank-logo" style="display: none;">
+                    </div>
+                </div>
+                <h1 class="brand-title">SecureBank</h1>
+                <p class="brand-subtitle">Your trusted financial partner</p>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Bank-grade Security</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-clock"></i>
+                        <span>24/7 Access</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Mobile Banking</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Login Form -->
+        <div class="login-panel">
+            <div class="login-form-container">
+                <div class="login-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to access your banking dashboard</p>
+                </div>
+
+                <div class="login-actions">
+                    <!-- Main Login Button -->
+                    <button type="button" (click)="login()" class="keycloak-button main-login-btn">
+                        <div class="button-content">
+                            <div class="icon-wrapper">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="button-text">
+                                <span class="main-text">Secure Login</span>
+                                <span class="sub-text">Login with Keycloak Authentication</span>
+                            </div>
+                            <i class="fas fa-arrow-right arrow-icon"></i>
+                        </div>
+                    </button>
+
+                    <!-- Interactive Divider -->
+                    <div class="interactive-divider">
+                        <div class="divider-line"></div>
+                        <div class="divider-text">
+                            <i class="fas fa-users"></i>
+                            <span>New to SecureBank?</span>
+                        </div>
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <!-- Register Button -->
+                    <button type="button" (click)="register()" class="register-button">
+                        <div class="button-content">
+                            <div class="icon-wrapper">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="button-text">
+                                <span class="main-text">Create Account</span>
+                                <span class="sub-text">Join thousands of satisfied customers</span>
+                            </div>
+                            <i class="fas fa-external-link-alt arrow-icon"></i>
+                        </div>
+                    </button>
+
+                    <!-- Additional Options -->
+                    <div class="additional-options">
+                        <a href="#" class="help-link" (click)="getHelp()">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Need Help?</span>
+                        </a>
+                        <a href="#" class="demo-link" (click)="viewDemo()">
+                            <i class="fas fa-play-circle"></i>
+                            <span>View Demo</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    <p>Don't have an account? <a href="#" class="signup-link">Sign up here</a></p>
+                    <div class="security-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Your data is protected with 256-bit SSL encryption</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Animation -->
+    <div class="background-animation">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+<!-- Sidebar -->
+<div class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-header">
+        <h4 class="sidebar-title">
+            <i class="fas fa-university me-2"></i>
+            <span *ngIf="!sidebarCollapsed">Banking Services</span>
+        </h4>
+        <button class="btn btn-link sidebar-toggle" (click)="toggleSidebar()">
+            <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed" [class.fa-chevron-right]="sidebarCollapsed"></i>
+        </button>
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-section">
+            <h6 class="menu-title" *ngIf="!sidebarCollapsed">Main Services</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item" *ngFor="let service of bankingServices">
+                    <a [routerLink]="service.route" class="nav-link">
+                        <i [class]="service.icon + ' me-2'"></i>
+                        <span *ngIf="!sidebarCollapsed">{{ service.title }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="menu-section" *ngIf="!sidebarCollapsed">
+            <h6 class="menu-title">Quick Actions</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item" *ngFor="let action of quickActions">
+                    <a [routerLink]="action.route" class="nav-link quick-action">
+                        <i [class]="action.icon + ' me-2'"></i>
+                        <span>{{ action.title }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

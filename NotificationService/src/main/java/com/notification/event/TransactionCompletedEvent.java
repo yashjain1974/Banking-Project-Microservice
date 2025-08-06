@@ -1,4 +1,4 @@
-package com.notification.dto;
+package com.notification.event;
 
 import java.io.Serializable; // Good practice for Kafka events
 

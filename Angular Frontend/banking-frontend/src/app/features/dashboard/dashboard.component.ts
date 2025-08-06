@@ -1,57 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router'; // Import RouterLink
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { UserProfileService, UserProfile } from '../user-profile/user-profile.service'; // Import UserProfileService and UserProfile interface
+import { UserProfileService, UserProfile } from '../user-profile/user-profile.service';
 import { KycStatus } from '../../shared/models/user.model';
-
-
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink], // Add RouterLink
-  template: `
-    <div class="dashboard-container">
-      <h2>Welcome to Your Dashboard!</h2>
-      <div *ngIf="authService.isLoggedIn()">
-        <p>You are logged in as: <strong>{{ (authService.getIdentityClaims()?.preferred_username || 'User') }}</strong></p>
-        <button (click)="logout()" class="logout-button">Logout</button>
-
-        <h3>Your Profile Details</h3>
-        <div *ngIf="loadingProfile" class="loading-message">Loading user profile...</div>
-        <div *ngIf="profileError" class="error-message">Error loading profile: {{ profileError }}</div>
-
-        <div *ngIf="userProfile && !loadingProfile">
-          <p>User ID: {{ userProfile.userId }}</p>
-          <p>Email: {{ userProfile.email }}</p>
-          <p>Full Name: {{ userProfile.firstName }} {{ userProfile.lastName }}</p>
-          <p>KYC Status: <strong [ngClass]="getKycStatusClass(userProfile.kycStatus)">{{ userProfile.kycStatus }}</strong></p>
-
-          <div class="kyc-status-section">
-            <ng-container [ngSwitch]="userProfile.kycStatus">
-              <div *ngSwitchCase="KycStatus.PENDING" class="kyc-pending-message">
-                <p>Your account is pending KYC verification. Full banking features will be available once approved by an administrator.</p>
-                <p>Please ensure all your submitted details are accurate.</p>
-              </div>
-              <div *ngSwitchCase="KycStatus.REJECTED" class="kyc-rejected-message">
-                <p>Your KYC verification was rejected. Full banking features are currently unavailable.</p>
-                <p>Please contact support for more information.</p>
-              </div>
-              <div *ngSwitchCase="KycStatus.VERIFIED" class="kyc-verified-message">
-                <p>Your KYC is verified! You now have full access to all banking features.</p>
-                <button routerLink="/banking-features" class="proceed-button">Proceed to Banking</button>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="!authService.isLoggedIn()">
-        <p>You are not logged in. Please <a routerLink="/login">Login</a>.</p>
-      </div>
-    </div>
-  `,
-  styleUrls: ['./dashboard.component.css'] // Assuming you have a CSS file
+  imports: [CommonModule, RouterLink],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   userProfile: UserProfile | null = null;
@@ -61,7 +20,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     public authService: AuthService, // Made public to use in template
-    private userProfileService: UserProfileService // Inject UserProfileService
+    private userProfileService: UserProfileService
   ) { }
 
   ngOnInit(): void {
@@ -80,18 +39,18 @@ export class DashboardComponent implements OnInit {
     const userId = this.authService.getIdentityClaims()?.sub;
 
     if (userId) {
-      this.userProfileService.getUserProfile(userId).subscribe(
-        (data) => {
+      this.userProfileService.getUserProfile(userId).subscribe({
+        next: (data) => {
           this.userProfile = data;
           this.loadingProfile = false;
           console.log('User Profile from Backend:', this.userProfile);
         },
-        (error) => {
+        error: (error) => {
           console.error('Error fetching user profile:', error);
           this.profileError = error.error?.message || 'Failed to load user profile.';
           this.loadingProfile = false;
         }
-      );
+      });
     } else {
       this.profileError = 'User ID not found in token.';
       this.loadingProfile = false;
@@ -104,6 +63,94 @@ export class DashboardComponent implements OnInit {
       case KycStatus.VERIFIED: return 'status-verified';
       case KycStatus.REJECTED: return 'status-rejected';
       default: return '';
+    }
+  }
+
+  getKycStatusIcon(status: KycStatus): string {
+    switch (status) {
+      case KycStatus.PENDING: return 'fas fa-clock';
+      case KycStatus.VERIFIED: return 'fas fa-check-circle';
+      case KycStatus.REJECTED: return 'fas fa-times-circle';
+      default: return 'fas fa-question-circle';
+    }
+  }
+
+  /**
+   * Navigate to banking services (when KYC is verified)
+   */
+  proceedToBanking(): void {
+    // This method can be used for additional logic before navigation
+    // The actual navigation is handled by routerLink in the template
+    console.log('Proceeding to banking services...');
+  }
+
+  /**
+   * Contact support for KYC issues
+   */
+  contactSupport(): void {
+    // Implementation for contacting support
+    // This could open a modal, navigate to support page, or open email client
+    console.log('Contacting support...');
+
+    // Example: Open email client
+    const email = 'support@securebank.com';
+    const subject = 'KYC Verification Support';
+    const body = 'Hello, I need assistance with my KYC verification process. My User ID is: ' +
+      (this.userProfile?.userId || 'N/A');
+
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
+  /**
+   * Refresh user profile data
+   */
+  refreshProfile(): void {
+    this.loadUserProfile();
+  }
+
+  /**
+   * Get user display name
+   */
+  getUserDisplayName(): string {
+    if (this.userProfile) {
+      return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
+    }
+    return this.authService.getIdentityClaims()?.preferred_username || 'User';
+  }
+
+  /**
+   * Get formatted user ID for display
+   */
+  getFormattedUserId(): string {
+    if (this.userProfile?.userId) {
+      // Format user ID for better readability (e.g., add dashes or spaces)
+      return this.userProfile.userId.toString().replace(/(\d{4})(?=\d)/g, '$1-');
+    }
+    return 'N/A';
+  }
+
+  /**
+   * Check if user can access banking services
+   */
+  canAccessBankingServices(): boolean {
+    return this.userProfile?.kycStatus === KycStatus.VERIFIED;
+  }
+
+  /**
+   * Get KYC status message for user guidance
+   */
+  getKycStatusMessage(): string {
+    if (!this.userProfile) return '';
+
+    switch (this.userProfile.kycStatus) {
+      case KycStatus.PENDING:
+        return 'Your account verification is in progress. This usually takes 2-3 business days.';
+      case KycStatus.VERIFIED:
+        return 'Your account is fully verified and ready for all banking services.';
+      case KycStatus.REJECTED:
+        return 'Your verification was unsuccessful. Please contact support for assistance.';
+      default:
+        return 'Account verification status unknown.';
     }
   }
 }

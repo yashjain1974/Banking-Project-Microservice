@@ -72,7 +72,7 @@ public class CreditCardServiceImpl implements CreditCardService {
         CreditCard card = new CreditCard();
         card.setUserId(requestDTO.getUserId());
         card.setAccountId(requestDTO.getAccountId());
-        card.setCardNumber(generateValidIndianCreditCardNumber());
+        card.setCardNumber(generateUniqueIndianCreditCardNumber());
         card.setCardType(requestDTO.getCardType());
         card.setIssueDate(requestDTO.getIssueDate());
         card.setExpiryDate(requestDTO.getExpiryDate());
@@ -82,6 +82,14 @@ public class CreditCardServiceImpl implements CreditCardService {
 
         CreditCard savedCard = creditCardRepository.save(card);
         return mapToResponseDTO(savedCard);
+    }
+    
+    private String generateUniqueIndianCreditCardNumber() {
+        String cardNumber;
+        do {
+            cardNumber = generateValidIndianCreditCardNumber();
+        } while (creditCardRepository.existsByCardNumber(cardNumber));
+        return cardNumber;
     }
 
     private String generateValidIndianCreditCardNumber() {

@@ -15,10 +15,12 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import com.notification.dto.TransactionCompletedEvent;
+import com.notification.event.KycStatusUpdatedEvent;
+import com.notification.event.LoanStatusUpdatedEvent;
+import com.notification.event.TransactionCompletedEvent;
 
-@EnableKafka // Enables Spring's Kafka integration
 @Configuration
+@EnableKafka
 public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
@@ -27,28 +29,40 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
-    @Bean
-    public ConsumerFactory<String, TransactionCompletedEvent> consumerFactory() {
+    // ✅ Generic method to build a ConsumerFactory for any type
+    private <T> ConsumerFactory<String, T> buildConsumerFactory(Class<T> targetType) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        // Use ErrorHandlingDeserializer to catch deserialization errors without stopping the consumer
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
-        // Specify the target type for JSON deserialization
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, TransactionCompletedEvent.class.getName());
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*"); // Trust all packages for deserialization
-
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, targetType.getName());
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
+    // ✅ Factory for TransactionCompletedEvent
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, TransactionCompletedEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, TransactionCompletedEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-        // Optional: Configure error handling for the listener container
-        // factory.setErrorHandler(new CommonLoggingErrorHandler());
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionCompletedEvent> transactionKafkaListenerContainerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, TransactionCompletedEvent>();
+        factory.setConsumerFactory(buildConsumerFactory(TransactionCompletedEvent.class));
+        return factory;
+    }
+
+    // ✅ Factory for LoanStatusUpdatedEvent
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, LoanStatusUpdatedEvent> loanKafkaListenerContainerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, LoanStatusUpdatedEvent>();
+        factory.setConsumerFactory(buildConsumerFactory(LoanStatusUpdatedEvent.class));
+        return factory;
+    }
+
+    // ✅ Factory for KycStatusUpdatedEvent
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, KycStatusUpdatedEvent> kycKafkaListenerContainerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, KycStatusUpdatedEvent>();
+        factory.setConsumerFactory(buildConsumerFactory(KycStatusUpdatedEvent.class));
         return factory;
     }
 }

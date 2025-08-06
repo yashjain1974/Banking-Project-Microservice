@@ -1,23 +1,377 @@
-<div class="dashboard-container">
-    <h2>Welcome to Your Dashboard!</h2>
-    <div *ngIf="authService.isLoggedIn()">
-    <p>You are logged in as: <strong>{{ authService.getIdentityClaims()?.preferred_username || 'User' }}</strong></p>
-        <button (click)="logout()" class="logout-button">Logout</button>
+<!-- Navigation Header -->
+<nav class="dashboard-navbar">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <i class="fas fa-university"></i>
+        <!-- Replace with your bank logo -->
+        <img src="assets/images/bank-logo.png" alt="Bank Logo" class="nav-logo-img" style="display: none;">
+      </div>
+      <div class="nav-brand-text">
+        <h3>SecureBank</h3>
+        <span>Digital Banking Portal</span>
+      </div>
+    </div>
 
-        <h3>Your Profile (from User Microservice)</h3>
-        <div *ngIf="userProfile">
-            <p>User ID: {{ userProfile.userId }}</p>
-            <p>Email: {{ userProfile.email }}</p>
-            <p>First Name: {{ userProfile.firstName }}</p>
-            <p>Last Name: {{ userProfile.lastName }}</p>
-            <p>Role: {{ userProfile.role }}</p>
-            <p>KYC Status: {{ userProfile.kycStatus }}</p>
+    <div class="nav-user-section">
+      <div class="user-welcome" *ngIf="authService.isLoggedIn()">
+        <div class="user-avatar">
+          <i class="fas fa-user-circle"></i>
         </div>
-        <div *ngIf="!userProfile">
-            <p>Loading user profile...</p>
+        <div class="user-info">
+          <span class="user-greeting">Welcome back,</span>
+          <span class="user-name">{{ authService.getIdentityClaims()?.preferred_username || 'User' }}</span>
         </div>
+      </div>
+
+      <button (click)="logout()" class="logout-button" *ngIf="authService.isLoggedIn()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
     </div>
-    <div *ngIf="!authService.isLoggedIn()">
-        <p>You are not logged in. Please <a routerLink="/login">Login</a>.</p>
+  </div>
+</nav>
+<!-- Main Dashboard Content -->
+<div class="dashboard-wrapper">
+  <!-- Not Logged In State -->
+  <div *ngIf="!authService.isLoggedIn()" class="not-logged-in">
+    <div class="login-prompt">
+      <div class="prompt-icon">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h2>Access Required</h2>
+      <p>You need to be logged in to access your dashboard</p>
+      <button routerLink="/login" class="login-redirect-button">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Go to Login</span>
+      </button>
     </div>
+  </div>
+
+  <!-- Logged In Dashboard -->
+  <div *ngIf="authService.isLoggedIn()" class="dashboard-content">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-card">
+        <div class="welcome-icon">
+          <i class="fas fa-home"></i>
+        </div>
+        <div class="welcome-text">
+          <h1>Welcome to Your Dashboard</h1>
+          <p>Manage your finances with confidence and security</p>
+        </div>
+        <div class="welcome-decoration">
+          <div class="floating-icon">
+            <i class="fas fa-coins"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile Section -->
+    <div class="profile-section">
+      <div class="section-header">
+        <div class="header-icon">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <h2>Your Profile</h2>
+        <div class="header-decoration"></div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loadingProfile" class="loading-card">
+        <div class="loading-content">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <p>Loading your profile...</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="profileError" class="error-card">
+        <div class="error-content">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Unable to Load Profile</h3>
+          <p>{{ profileError }}</p>
+          <button (click)="loadUserProfile()" class="retry-button">
+            <i class="fas fa-redo"></i>
+            <span>Try Again</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Profile Content -->
+      <div *ngIf="userProfile && !loadingProfile" class="profile-content">
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-avatar-large">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-name">
+              <h3>{{ userProfile.firstName }} {{ userProfile.lastName }}</h3>
+              <p>{{ userProfile.email }}</p>
+            </div>
+            <div class="kyc-badge" [ngClass]="getKycStatusClass(userProfile.kycStatus)">
+              <i [class]="getKycStatusIcon(userProfile.kycStatus)"></i>
+              <span>{{ userProfile.kycStatus }}</span>
+            </div>
+          </div>
+
+          <div class="profile-details">
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-id-badge"></i>
+              </div>
+              <div class="detail-info">
+                <span class="detail-label">User ID</span>
+                <span class="detail-value">{{ userProfile.userId }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="detail-info">
+                <span class="detail-label">Email Address</span>
+                <span class="detail-value">{{ userProfile.email }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-user-tag"></i>
+              </div>
+              <div class="detail-info">
+                <span class="detail-label">Account Role</span>
+                <span class="detail-value">{{ userProfile.role }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KYC Status Section -->
+        <div class="kyc-status-section">
+          <ng-container [ngSwitch]="userProfile.kycStatus">
+            <div *ngSwitchCase="KycStatus.PENDING" class="kyc-status-card kyc-pending">
+              <div class="kyc-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="kyc-content">
+                <h3>KYC Verification Pending</h3>
+                <p>Your account is under review. Full banking features will be available once approved by our team.</p>
+                <ul class="kyc-checklist">
+                  <li><i class="fas fa-check"></i> Identity documents submitted</li>
+                  <li><i class="fas fa-clock"></i> Admin verification in progress</li>
+                  <li><i class="fas fa-hourglass-half"></i> Estimated processing: 2-3 business days</li>
+                </ul>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="KycStatus.REJECTED" class="kyc-status-card kyc-rejected">
+              <div class="kyc-icon">
+                <i class="fas fa-times-circle"></i>
+              </div>
+              <div class="kyc-content">
+                <h3>KYC Verification Rejected</h3>
+                <p>Unfortunately, your KYC verification was not approved. Please contact our support team for
+                  assistance.</p>
+                <button class="contact-support-button">
+                  <i class="fas fa-headset"></i>
+                  <span>Contact Support</span>
+                </button>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="KycStatus.VERIFIED" class="kyc-status-card kyc-verified">
+              <div class="kyc-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="kyc-content">
+                <h3>KYC Verified Successfully!</h3>
+                <p>Congratulations! Your account is fully verified and you have access to all banking features.</p>
+                <button routerLink="/banking-features" class="proceed-button">
+                  <i class="fas fa-arrow-right"></i>
+                  <span>Access Banking Services</span>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banking Services Section -->
+    <div class="services-section">
+      <div class="section-header">
+        <div class="header-icon">
+          <i class="fas fa-concierge-bell"></i>
+        </div>
+        <h2>Our Banking Services</h2>
+        <div class="header-decoration"></div>
+      </div>
+
+      <div class="services-grid">
+        <!-- Account Management -->
+        <div class="service-category">
+          <div class="category-header">
+            <div class="category-icon">
+              <i class="fas fa-user-cog"></i>
+            </div>
+            <h3>Account Management</h3>
+          </div>
+          <div class="service-items">
+            <div class="service-item">
+              <i class="fas fa-plus-circle"></i>
+              <span>Account Creation</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-search-dollar"></i>
+              <span>Balance Inquiry</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-info-circle"></i>
+              <span>Account Status</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Account Details</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Services -->
+        <div class="service-category">
+          <div class="category-header">
+            <div class="category-icon">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h3>Transaction Services</h3>
+          </div>
+          <div class="service-items">
+            <div class="service-item">
+              <i class="fas fa-paper-plane"></i>
+              <span>Fund Transfers</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-piggy-bank"></i>
+              <span>Deposits</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-money-bill-wave"></i>
+              <span>Withdrawals</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-history"></i>
+              <span>Transaction History</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Services -->
+        <div class="service-category">
+          <div class="category-header">
+            <div class="category-icon">
+              <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <h3>Loan Services</h3>
+          </div>
+          <div class="service-items">
+            <div class="service-item">
+              <i class="fas fa-file-contract"></i>
+              <span>Loan Application</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-tasks"></i>
+              <span>Status Tracking</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-calculator"></i>
+              <span>EMI Calculator</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Services -->
+        <div class="service-category">
+          <div class="category-header">
+            <div class="category-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <h3>Card Services</h3>
+          </div>
+          <div class="service-items">
+            <div class="service-item">
+              <i class="fas fa-id-card"></i>
+              <span>Card Issuance</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-shield-alt"></i>
+              <span>Card Management</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-sliders-h"></i>
+              <span>Limit Updates</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-eye"></i>
+              <span>Card Details</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Management -->
+        <div class="service-category">
+          <div class="category-header">
+            <div class="category-icon">
+              <i class="fas fa-user-edit"></i>
+            </div>
+            <h3>Profile Management</h3>
+          </div>
+          <div class="service-items">
+            <div class="service-item">
+              <i class="fas fa-eye"></i>
+              <span>Profile Viewing</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-edit"></i>
+              <span>Profile Updates</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="service-category">
+          <div class="category-header">
+            <div class="category-icon">
+              <i class="fas fa-bell"></i>
+            </div>
+            <h3>Notifications</h3>
+          </div>
+          <div class="service-items">
+            <div class="service-item">
+              <i class="fas fa-envelope"></i>
+              <span>Email Alerts</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-sms"></i>
+              <span>SMS Notifications</span>
+            </div>
+            <div class="service-item">
+              <i class="fas fa-bolt"></i>
+              <span>Real-time Updates</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Animation -->
+  <div class="background-animation">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+  </div>
 </div>

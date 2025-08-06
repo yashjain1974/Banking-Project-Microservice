@@ -1,5 +1,3 @@
-# src/main/resources/application.yml (Notification Microservice)
-
 spring:
   application:
     name: notification-service
@@ -19,6 +17,16 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.OracleDialect
 
+  mail: # <--- ADD THIS SECTION FOR GMAIL SMTP
+    host: smtp.gmail.com
+    port: 587 # Standard TLS port
+    username: yashyash191174@gmail.com # <--- Replace with your Gmail address
+    password: ftap qlvm dgbu bnun # <--- IMPORTANT: Use a Gmail App Password, NOT your regular password
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true # Enable STARTTLS for secure connection
+      mail.smtp.ssl.trust: smtp.gmail.com # Trust Gmail's SSL certificate (sometimes needed)
+
   security: # <--- ADD THIS SECTION FOR SECURITY CONFIGURATION
     oauth2:
       resourceserver:
@@ -29,20 +37,18 @@ spring:
           jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
           # Alternatively, you can use issuer-uri if you prefer. Spring will discover JWKS from here.
           # issuer-uri: http://localhost:8080/realms/bank-realm
+
   kafka:
-    bootstrap-servers: localhost:9092 # Address of your Kafka broker
+    bootstrap-servers: localhost:9092
     consumer:
-      group-id: notification-service-group # Unique consumer group ID for this service
+      group-id: notification-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer # For robust deserialization
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
-        # Configure JSON deserializer to handle the specific event type
-        spring.json.value.default.type: com.transaction.event.TransactionCompletedEvent # IMPORTANT: Full class name of the event DTO
-        # If you have multiple event types from different topics, you might need to trust all packages:
-        # spring.json.trusted.packages: "*"
-        # For ErrorHandlingDeserializer
+        spring.json.type.mapping: transaction-events:com.notification.event.TransactionCompletedEvent,kyc-status-events:com.notification.event.KycStatusUpdatedEvent,loan-status-events:com.notification.event.LoanStatusUpdatedEvent
+        spring.json.trusted.packages: "com.notification.event"
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: latest # Start reading from the latest offset if no previous offset exists
+      auto-offset-reset: latest
 
 server:
   port: 8002
@@ -70,7 +76,60 @@ eureka:
   instance:
     preferIpAddress: true # Optional: Good for containerized environments
 
-management:
-  tracing:
+management: # ENABLED: Actuator, Prometheus, and Tracing configuration
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # Expose health, info, and prometheus endpoints
+  tracing: # Existing tracing configuration for Sleuth/Micrometer
     sampling:
       probability: 1.0
+
+resilience4j: # <--- THIS SECTION WAS MISSING/INCOMPLETE
+  circuitbreaker:
+    configs:
+      default: # <--- Define the default configuration
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignoreExceptions:
+          - com.notification.exceptions.NotificationProcessingException
+    instances:
+      userService: # Your Feign client instance
+        baseConfig: default # Refer to the default config
+
+  retry:
+    configs:
+      default: # <--- Define the default configuration
+        maxAttempts: 3
+        waitDuration: 1s
+        retryExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignoreExceptions:
+          - com.notification.exceptions.NotificationProcessingException
+    instances:
+      userService: # Your Feign client instance
+        baseConfig: default # Refer to the default config
+
+  timelimiter:
+    configs:
+      default: # <--- Define the default configuration
+        timeoutDuration: 3s
+    instances:
+      userService: # Your Feign client instance
+        baseConfig: default # Refer to the default config
+keycloak:
+  service-client: # New section for this service's own client credentials
+    url: http://localhost:8080 # Keycloak server URL
+    realm: bank-realm
+    client-id: notification-service-client # Client ID created above
+    client-secret: 9zAkbu3DiXjsNfmSKpjMID47bPof0d4F # Secret from Keycloak

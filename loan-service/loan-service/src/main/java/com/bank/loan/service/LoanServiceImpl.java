@@ -1,45 +1,47 @@
 package com.bank.loan.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bank.loan.client.UserClient;
 import com.bank.loan.dto.LoanRequestDto;
 import com.bank.loan.dto.LoanResponseDto;
-import com.bank.loan.dto.UserDto; // Import UserDto
+import com.bank.loan.dto.UserDto;
 import com.bank.loan.entity.Loan;
 import com.bank.loan.entity.Loan.LoanStatus;
+import com.bank.loan.event.LoanStatusUpdatedEvent; // <--- Ensure this event DTO is correctly imported
 import com.bank.loan.exception.LoanCreationException;
 import com.bank.loan.exception.LoanNotFoundException;
 import com.bank.loan.exception.LoanProcessingException;
-import com.bank.loan.exception.UnauthorizedUserException; // NEW: Custom exception for KYC/unauthorized
+import com.bank.loan.exception.UnauthorizedUserException;
 import com.bank.loan.mapper.LoanMapper;
 import com.bank.loan.repository.LoanRepository;
 
 @Service
 public class LoanServiceImpl implements LoanService {
 	private final LoanRepository loanRepository;
-	private final UserClient userClient; // Inject UserClient
+	private final UserClient userClient;
+    private final KafkaTemplate<String, LoanStatusUpdatedEvent> kafkaTemplate; // Ensure correct KafkaTemplate type
 
 	@Autowired
-	public LoanServiceImpl(LoanRepository loanRepository, UserClient userClient) {
+	public LoanServiceImpl(LoanRepository loanRepository, UserClient userClient, KafkaTemplate<String, LoanStatusUpdatedEvent> kafkaTemplate) {
 		this.loanRepository = loanRepository;
 		this.userClient = userClient;
+        this.kafkaTemplate = kafkaTemplate;
 	}
 
     /**
      * Helper method for KYC check.
      */
     private void checkKycStatus(String userId) {
-        UserDto userProfile = userClient.getUserById(userId); // Call UserClient
+        UserDto userProfile = userClient.getUserById(userId);
         if (userProfile == null) {
             throw new UnauthorizedUserException("User profile not found for loan application. Cannot proceed.");
         }
@@ -52,23 +54,33 @@ public class LoanServiceImpl implements LoanService {
 	@Transactional
 	public LoanResponseDto applyForLoan(LoanRequestDto requestDto) {
 		try {
-			// 1. Validate User existence and KYC status via User Service
-			UserDto user = userClient.getUserById(requestDto.getUserId()); // Call UserClient
+			UserDto user = userClient.getUserById(requestDto.getUserId());
 			if (user == null) {
 				throw new LoanCreationException("User not found with ID: " + requestDto.getUserId());
 			}
-            // Perform KYC check for the user
-            checkKycStatus(requestDto.getUserId()); // <--- KYC CHECK
+            checkKycStatus(requestDto.getUserId());
 
 			Loan loan = LoanMapper.toEntity(requestDto);
 			loan.setApplicationDate(LocalDateTime.now());
 			loan.setStatus(LoanStatus.PENDING);
 
 			Loan savedLoan = loanRepository.save(loan);
+
+            // Publish Loan status updated event (for initial PENDING status)
+            publishLoanStatusUpdatedEvent(
+                savedLoan.getLoanId(),
+                savedLoan.getUserId(),
+                null, // Old status is null for new creation
+                savedLoan.getStatus().name(),
+                savedLoan.getAmount().doubleValue(),
+                savedLoan.getLoanType().name(),
+                "Your loan application has been submitted and is PENDING approval."
+            );
+
 			return LoanMapper.toDto(savedLoan);
 		} catch (DataIntegrityViolationException e) {
 			throw new LoanCreationException("Failed to apply for loan due to data integrity violation.", e);
-		} catch (LoanCreationException | UnauthorizedUserException e) { // Catch new exception
+		} catch (LoanCreationException | UnauthorizedUserException e) {
             throw e;
         } catch (Exception e) {
 			throw new LoanProcessingException("Failed to apply for loan unexpectedly: " + e.getMessage(), e);
@@ -97,6 +109,8 @@ public class LoanServiceImpl implements LoanService {
 		Loan loan = loanRepository.findById(loanId)
 				.orElseThrow(() -> new LoanNotFoundException("Loan not found with id: " + loanId));
 		
+		String oldStatus = loan.getStatus().name(); // Store old status
+
 		if (loan.getStatus() == LoanStatus.APPROVED) {
             throw new LoanProcessingException("Loan with ID: " + loanId + " is already approved.");
         }
@@ -106,7 +120,18 @@ public class LoanServiceImpl implements LoanService {
 
 		loan.setStatus(LoanStatus.APPROVED);
 		try {
-            return LoanMapper.toDto(loanRepository.save(loan));
+            Loan updatedLoan = loanRepository.save(loan);
+            // Publish Loan status updated event
+            publishLoanStatusUpdatedEvent(
+                updatedLoan.getLoanId(),
+                updatedLoan.getUserId(),
+                oldStatus,
+                updatedLoan.getStatus().name(),
+                updatedLoan.getAmount().doubleValue(),
+                updatedLoan.getLoanType().name(),
+                "Your loan application has been APPROVED."
+            );
+            return LoanMapper.toDto(updatedLoan);
         } catch (Exception e) {
             throw new LoanProcessingException("Failed to approve loan with ID: " + loanId, e);
         }
@@ -118,6 +143,8 @@ public class LoanServiceImpl implements LoanService {
 		Loan loan = loanRepository.findById(loanId)
 				.orElseThrow(() -> new LoanNotFoundException("Loan not found with id: " + loanId));
 		
+		String oldStatus = loan.getStatus().name(); // Store old status
+
 		if (loan.getStatus() == LoanStatus.REJECTED) {
             throw new LoanProcessingException("Loan with ID: " + loanId + " is already rejected.");
         }
@@ -127,7 +154,18 @@ public class LoanServiceImpl implements LoanService {
 
 		loan.setStatus(LoanStatus.REJECTED);
 		try {
-            return LoanMapper.toDto(loanRepository.save(loan));
+            Loan updatedLoan = loanRepository.save(loan);
+            // Publish Loan status updated event
+            publishLoanStatusUpdatedEvent(
+                updatedLoan.getLoanId(),
+                updatedLoan.getUserId(),
+                oldStatus,
+                updatedLoan.getStatus().name(),
+                updatedLoan.getAmount().doubleValue(),
+                updatedLoan.getLoanType().name(),
+                "Your loan application has been REJECTED."
+            );
+            return LoanMapper.toDto(updatedLoan);
         } catch (Exception e) {
             throw new LoanProcessingException("Failed to reject loan with ID: " + loanId, e);
         }
@@ -135,36 +173,55 @@ public class LoanServiceImpl implements LoanService {
 
 	@Override
 	public Double calculateEmi(String loanId) {
-	    Loan loan = loanRepository.findById(loanId)
-	            .orElseThrow(() -> new LoanNotFoundException("Loan not found with id: " + loanId));
+		Loan loan = loanRepository.findById(loanId)
+				.orElseThrow(() -> new LoanNotFoundException("Loan not found with id: " + loanId));
 
-	    BigDecimal principal = loan.getAmount(); // BigDecimal
-	    double annualRate = loan.getInterestRate(); // still a double
-	    int months = loan.getTenureInMonths();
+		double principal = loan.getAmount().doubleValue();
+		double annualRate = loan.getInterestRate();
+		int months = loan.getTenureInMonths();
 
-	    if (annualRate <= 0 || months <= 0) {
-	        throw new LoanProcessingException("Invalid loan details for EMI calculation: annual rate and months must be positive.");
-	    }
+		if (annualRate <= 0 || months <= 0) {
+            throw new LoanProcessingException("Invalid loan details for EMI calculation: annual rate and months must be positive.");
+        }
 
-	    BigDecimal monthlyRate = BigDecimal.valueOf(annualRate).divide(BigDecimal.valueOf(12 * 100), 10, RoundingMode.HALF_EVEN);
-	    BigDecimal emi;
+		double monthlyRate = annualRate / 12 / 100;
+		double emi;
 
-	    if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
-	        emi = principal.divide(BigDecimal.valueOf(months), 2, RoundingMode.HALF_EVEN);
-	    } else {
-	        BigDecimal onePlusR = BigDecimal.ONE.add(monthlyRate);
-	        BigDecimal power = onePlusR.pow(months);
-	        BigDecimal numerator = principal.multiply(monthlyRate).multiply(power);
-	        BigDecimal denominator = power.subtract(BigDecimal.ONE);
-	        emi = numerator.divide(denominator, 10, RoundingMode.HALF_EVEN);
-	        emi = emi.setScale(2, RoundingMode.HALF_EVEN); // round to 2 decimal places
-	    }
-
-	    return emi.doubleValue(); // returning Double as per method signature
+		if (monthlyRate == 0) {
+            emi = principal / months;
+        } else {
+            emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months))
+                    / (Math.pow(1 + monthlyRate, months) - 1);
+        }
+		
+		return Math.round(emi * 100.0) / 100.0;
 	}
+
 	@Override
 	public List<LoanResponseDto> getAllLoans() {
 		List<Loan> loans = loanRepository.findAll();
 		return loans.stream().map(LoanMapper::toDto).collect(Collectors.toList());
 	}
+
+    /**
+     * Helper method to publish LoanStatusUpdatedEvent to Kafka.
+     */
+    private void publishLoanStatusUpdatedEvent(String loanId, String userId, String oldStatus, String newStatus, Double loanAmount, String loanType, String message) {
+        LoanStatusUpdatedEvent event = new LoanStatusUpdatedEvent(
+            loanId,
+            userId,
+            oldStatus,
+            newStatus,
+            loanAmount,
+            loanType,
+            LocalDateTime.now(),
+            message
+        );
+        try {
+            kafkaTemplate.send("loan-status-events", event); // 'loan-status-events' is the Kafka topic name
+            System.out.println("Published loan status updated event to Kafka: Loan " + loanId + ", Status: " + newStatus);
+        } catch (Exception e) {
+            System.err.println("Failed to publish loan status updated event to Kafka for loan " + loanId + ": " + e.getMessage());
+        }
+    }
 }

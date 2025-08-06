@@ -4,70 +4,157 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.annotation.KafkaListener; // Import KafkaListener
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Ensure transactional context if needed
+import org.springframework.transaction.annotation.Transactional;
 
 import com.notification.dao.NotificationRepository;
 import com.notification.dto.NotificationRequest;
 import com.notification.dto.NotificationResponse;
-import com.notification.dto.TransactionCompletedEvent;
+import com.notification.dto.UserDto;
+import com.notification.event.KycStatusUpdatedEvent; // Import local event DTO
+import com.notification.event.LoanStatusUpdatedEvent; // Import local event DTO
+import com.notification.event.TransactionCompletedEvent;
+import com.notification.exceptions.NotificationProcessingException;
 import com.notification.model.Notification;
 import com.notification.model.NotificationStatus;
 import com.notification.model.NotificationType;
+import com.notification.proxyService.UserServiceClient;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final JavaMailSender mailSender;
+    private final UserServiceClient userServiceClient;
+
+    @Value("${keycloak.service-client.url}")
+    private String keycloakServiceClientUrl;
+    @Value("${keycloak.service-client.realm}")
+    private String keycloakServiceClientRealm;
+    @Value("${keycloak.service-client.client-id}")
+    private String keycloakServiceClientClientId;
+    @Value("${keycloak.service-client.client-secret}")
+    private String keycloakServiceClientClientSecret;
+
+    private String serviceAccessToken;
+
+    @Value("${spring.mail.username}")
+    private String fromEmailAddress;
 
     @Autowired
-    public NotificationServiceImpl(NotificationRepository notificationRepository) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository, JavaMailSender mailSender, UserServiceClient userServiceClient) {
         this.notificationRepository = notificationRepository;
+        this.mailSender = mailSender;
+        this.userServiceClient = userServiceClient;
     }
 
-    /**
-     * Kafka Listener method to consume TransactionCompletedEvent messages.
-     * This method is triggered when a new message arrives in the 'transaction-events' topic.
-     *
-     * @param event The TransactionCompletedEvent DTO received from Kafka.
-     */
-    @KafkaListener(topics = "transaction-events", groupId = "notification-service-group", containerFactory = "kafkaListenerContainerFactory")
-    // 'transaction-events' is the topic name, 'notification-service-group' is the consumer group ID
-    public void listenTransactionEvents(TransactionCompletedEvent event) {
-        System.out.println("Notification Service: Received transaction event from Kafka: " + event.getTransactionId());
-        System.out.println("Event Details: User=" + event.getUserId() + ", Amount=" + event.getAmount() + ", Type=" + event.getType());
+    @PostConstruct
+    public void init() {
+        this.refreshServiceAccessToken();
+    }
 
-        // Now, use the received event data to send the actual notification
-        // You can map this to your existing NotificationRequest DTO
+    @Scheduled(fixedRate = 300000)
+    public void refreshServiceAccessToken() {
+        try {
+            AccessTokenResponse tokenResponse = KeycloakBuilder.builder()
+                .serverUrl(keycloakServiceClientUrl)
+                .realm(keycloakServiceClientRealm)
+                .clientId(keycloakServiceClientClientId)
+                .clientSecret(keycloakServiceClientClientSecret)
+                .grantType("client_credentials")
+                .build()
+                .tokenManager()
+                .getAccessToken();
+            
+            this.serviceAccessToken = tokenResponse.getToken();
+            System.out.println("Notification Service: Successfully refreshed service-to-service token.");
+        } catch (Exception e) {
+            System.err.println("Notification Service: Failed to refresh service-to-service token: " + e.getMessage());
+            this.serviceAccessToken = null;
+        }
+    }
+
+    @KafkaListener(
+    	    topics = "transaction-events",
+    	    groupId = "notification-service-group",
+    	    containerFactory = "transactionKafkaListenerContainerFactory"
+    	)
+    public void listenTransactionEvents(TransactionCompletedEvent event) { // Use local event DTO
+        System.out.println("Notification Service: Received transaction event from Kafka: " + event.getTransactionId());
+
         NotificationRequest notificationRequest = new NotificationRequest();
         notificationRequest.setUserId(event.getUserId());
-        // Determine notification type based on event details (e.g., always EMAIL for transaction alerts)
-        notificationRequest.setType(NotificationType.EMAIL);
         notificationRequest.setContent(event.getNotificationMessage());
+        notificationRequest.setType(NotificationType.EMAIL);
 
-        // Call the internal sendNotification logic
-        // Note: This internal call should ideally not throw exceptions that stop the Kafka consumer.
-        // Handle exceptions gracefully or use a Dead Letter Queue (DLQ) for failed messages.
         try {
-            // We'll call the existing sendNotification method, but adapt it slightly if it's transactional
-            // or if it needs to return a response. For Kafka, we primarily care about processing the event.
-            sendNotificationInternal(notificationRequest); // Use an internal helper method
+            sendNotificationInternal(notificationRequest);
             System.out.println("Notification sent for transaction: " + event.getTransactionId());
         } catch (Exception e) {
             System.err.println("Error processing Kafka event for transaction " + event.getTransactionId() + ": " + e.getMessage());
-            // Log the error. For production, consider sending to a DLQ or alerting.
         }
     }
 
     /**
-     * Internal helper method to encapsulate notification sending logic,
-     * adapted for Kafka consumption.
-     * @param request The NotificationRequest DTO.
-     * @return A NotificationResponse DTO (optional, for internal use).
+     * NEW KAFKA LISTENER: Consumes KYC status update events.
      */
-    @Transactional // Ensure the database operation is atomic
+    @KafkaListener(
+    	    topics = "kyc-status-events",
+    	    groupId = "notification-service-group",
+    	    containerFactory = "kycKafkaListenerContainerFactory"
+    	)
+    public void listenKycStatusEvents(KycStatusUpdatedEvent event) { // Use local event DTO
+        System.out.println("Notification Service: Received KYC status event from Kafka: User=" + event.getUserId() + ", New Status=" + event.getNewKycStatus());
+
+        NotificationRequest notificationRequest = new NotificationRequest();
+        notificationRequest.setUserId(event.getUserId());
+        notificationRequest.setContent(event.getMessage());
+        notificationRequest.setType(NotificationType.EMAIL);
+
+        try {
+            sendNotificationInternal(notificationRequest);
+            System.out.println("KYC notification sent for user: " + event.getUserId());
+        } catch (Exception e) {
+            System.err.println("Error processing KYC event for user " + event.getUserId() + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW KAFKA LISTENER: Consumes Loan status update events.
+     */
+    @KafkaListener(
+    	    topics = "loan-status-events",
+    	    groupId = "notification-service-group",
+    	    containerFactory = "loanKafkaListenerContainerFactory"
+    	)
+    public void listenLoanStatusEvents(LoanStatusUpdatedEvent event) { // Use local event DTO
+        System.out.println("Notification Service: Received Loan status event from Kafka: Loan=" + event.getLoanId() + ", New Status=" + event.getNewStatus());
+
+        NotificationRequest notificationRequest = new NotificationRequest();
+        notificationRequest.setUserId(event.getUserId());
+        notificationRequest.setContent(event.getMessage());
+        notificationRequest.setType(NotificationType.EMAIL);
+
+        try {
+            sendNotificationInternal(notificationRequest);
+            System.out.println("Loan status notification sent for loan: " + event.getLoanId());
+        } catch (Exception e) {
+            System.err.println("Error processing Loan event for loan " + event.getLoanId() + ": " + e.getMessage());
+        }
+    }
+
+    @Transactional
     private NotificationResponse sendNotificationInternal(NotificationRequest request) {
         Notification notification = new Notification();
         notification.setUserId(request.getUserId());
@@ -83,7 +170,27 @@ public class NotificationServiceImpl implements NotificationService {
         response.setSentAt(notification.getSentAt());
 
         try {
-            System.out.println("Simulating sending " + request.getType() + " notification to user " + request.getUserId() + " via Kafka event: " + request.getContent());
+            String recipientEmail = null;
+
+            if (request.getUserId() != null) {
+                UserDto userProfile = userServiceClient.getUserById(request.getUserId(), "Bearer " + serviceAccessToken);
+                if (userProfile != null && userProfile.getEmail() != null) {
+                    recipientEmail = userProfile.getEmail();
+                } else {
+                    System.err.println("User profile or email not found for userId: " + request.getUserId() + ". Cannot send email.");
+                    throw new NotificationProcessingException("User email not found for notification.");
+                }
+            } else {
+                System.err.println("User ID is null. Cannot send email notification.");
+                throw new NotificationProcessingException("User ID is missing for notification.");
+            }
+
+            if (request.getType() == NotificationType.EMAIL) {
+                sendEmail(recipientEmail, "Banking Alert: " + request.getType().name() + " Update", request.getContent());
+            } else if (request.getType() == NotificationType.SMS) {
+                System.out.println("SMS sending is not implemented yet. Content: " + request.getContent());
+            }
+
             notification.setStatus(NotificationStatus.SENT);
             notification = notificationRepository.save(notification);
 
@@ -91,6 +198,23 @@ public class NotificationServiceImpl implements NotificationService {
             response.setStatus(NotificationStatus.SENT);
             response.setMessage("Notification sent successfully.");
 
+        } catch (MailException e) {
+            notification.setStatus(NotificationStatus.FAILED);
+            notification = notificationRepository.save(notification);
+
+            response.setNotificationId(notification.getNotificationId());
+            response.setStatus(NotificationStatus.FAILED);
+            response.setMessage("Failed to send email: " + e.getMessage());
+            System.err.println("Email sending failed for user " + request.getUserId() + ": " + e.getMessage());
+            throw new NotificationProcessingException("Failed to send email notification.", e);
+        } catch (NotificationProcessingException e) {
+            notification.setStatus(NotificationStatus.FAILED);
+            notification = notificationRepository.save(notification);
+            response.setNotificationId(notification.getNotificationId());
+            response.setStatus(NotificationStatus.FAILED);
+            response.setMessage(e.getMessage());
+            System.err.println("Notification processing failed for user " + request.getUserId() + ": " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             notification.setStatus(NotificationStatus.FAILED);
             notification = notificationRepository.save(notification);
@@ -98,22 +222,27 @@ public class NotificationServiceImpl implements NotificationService {
             response.setNotificationId(notification.getNotificationId());
             response.setStatus(NotificationStatus.FAILED);
             response.setMessage("Failed to send notification: " + e.getMessage());
-
-            // For Kafka consumers, typically you log and potentially send to a Dead Letter Topic
-            // rather than re-throwing, to avoid stopping the consumer or infinite retries.
             System.err.println("Notification processing failed for user " + request.getUserId() + ": " + e.getMessage());
+            throw new NotificationProcessingException("Failed to send notification via external provider.", e);
         }
         return response;
     }
 
-    // --- Existing methods (getNotificationById, getNotificationsByUserId, getNotificationsByTypeAndStatus) ---
-    // Keep your existing public API methods as they are for direct calls.
+    private void sendEmail(String toEmail, String subject, String content) throws Exception {
+        System.out.println("Attempting to send EMAIL to " + toEmail + " with subject: " + subject + ", content: " + content);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmailAddress);
+        message.setTo(toEmail);
+        message.setSubject(subject);
+        message.setText(content);
+        
+        mailSender.send(message);
+        System.out.println("Email sent via Gmail SMTP successfully to " + toEmail);
+    }
 
     @Override
     public NotificationResponse sendNotification(NotificationRequest request) {
-        // This method will now be called by the Controller for direct API calls,
-        // or you can remove it if all notifications are event-driven.
-        // For now, keep it as it might be used by other services directly.
         return sendNotificationInternal(request);
     }
 

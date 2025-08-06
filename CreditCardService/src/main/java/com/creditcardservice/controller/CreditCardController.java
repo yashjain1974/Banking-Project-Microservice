@@ -5,6 +5,8 @@ import com.creditcardservice.dto.CreditCardResponseDTO;
 import com.creditcardservice.dto.TransactionDTO;
 import com.creditcardservice.service.CreditCardService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,7 @@ public class CreditCardController {
 
     // Issue a new card
     @PostMapping("/issue")
-    public ResponseEntity<CreditCardResponseDTO> issueCard(@RequestBody CreditCardRequestDTO requestDTO) {
+    public ResponseEntity<CreditCardResponseDTO> issueCard(@Valid @RequestBody CreditCardRequestDTO requestDTO) {
         CreditCardResponseDTO response = creditCardService.issueCard(requestDTO);
         return ResponseEntity.ok(response);
     }

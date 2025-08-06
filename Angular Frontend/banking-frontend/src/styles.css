@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -7,7 +6,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -18,6 +18,7 @@ body {
   margin: 0;
   font-family: 'Inter', "Helvetica Neue", sans-serif;
   line-height: 1.6;
+ 
   color: #1e293b;
 }
 
@@ -174,6 +175,7 @@ body {
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -184,15 +186,19 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -252,16 +258,16 @@ body {
     margin: 16px !important;
     border-radius: 20px !important;
   }
-  
+
   .mat-mdc-card-content {
     padding: 1.5rem !important;
   }
-  
+
   .mat-mdc-button {
     width: 100%;
     margin-top: 16px !important;
   }
-  
+
   .mat-mdc-card-title {
     font-size: 1.5rem !important;
   }
@@ -271,7 +277,7 @@ body {
   .mat-mdc-card-content {
     padding: 1rem !important;
   }
-  
+
   .mat-mdc-card-title {
     font-size: 1.5rem !important;
   }
@@ -295,7 +301,13 @@ body {
   background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
 }
 
-.loan-form-card, .loan-card, .loan-user-card, .loan-detail-card, .reject-card, .approve-card, .emi-card{
+.loan-form-card,
+.loan-card,
+.loan-user-card,
+.loan-detail-card,
+.reject-card,
+.approve-card,
+.emi-card {
   width: 100%;
   max-width: 800px;
   margin: 4rem auto;

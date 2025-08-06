@@ -1,0 +1,33 @@
+<!-- Navigation Header -->
+    <nav class="dashboard-navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <div class="nav-logo">
+            <i class="fas fa-university"></i>
+            <!-- Replace with your bank logo -->
+            <img src="assets/images/bank-logo.png" alt="Bank Logo" class="nav-logo-img" style="display: none;">
+          </div>
+          <div class="nav-brand-text">
+            <h3>SecureBank</h3>
+            <span>Digital Banking Portal</span>
+          </div>
+        </div>
+        
+        <div class="nav-user-section">
+          <div class="user-welcome" *ngIf="authService.isLoggedIn()">
+            <div class="user-avatar">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="user-info">
+              <span class="user-greeting">Welcome back,</span>
+              <span class="user-name">{{ authService.getIdentityClaims()?.preferred_username || 'User' }}</span>
+            </div>
+          </div>
+          
+          <button (click)="logout()" class="logout-button" *ngIf="authService.isLoggedIn()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </nav>

@@ -29,6 +29,13 @@ spring:
         jwt:
           jwk-set-uri: http://localhost:8080/realms/bank-realm/protocol/openid-connect/certs
           # issuer-uri: http://localhost:8080/realms/bank-realm
+  kafka: # <--- ADD THIS SECTION FOR KAFKA PRODUCER
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
 
 server:
   port: 8004

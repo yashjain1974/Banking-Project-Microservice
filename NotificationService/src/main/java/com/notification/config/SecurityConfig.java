@@ -11,54 +11,41 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity // Enables Spring Security's web security support
-@EnableMethodSecurity(prePostEnabled = true) // Enables method-level security annotations like @PreAuthorize
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF for stateless REST APIs. JWTs provide protection against CSRF.
             .csrf(csrf -> csrf.disable())
-            // Configure authorization rules for HTTP requests
             .authorizeHttpRequests(authorize -> authorize
-                // Allow H2 console for development (if exposed directly, which is not recommended for prod)
-                .requestMatchers("/h2-console/**").permitAll()
-                // All other requests must be authenticated.
-                // This is the crucial line that ensures all other endpoints require a valid JWT.
-                .anyRequest().authenticated()
+                .requestMatchers("/actuator/**").permitAll() // Allow Prometheus to scrape
+                .requestMatchers("/h2-console/**").permitAll() // If using H2 for dev
+                .anyRequest().authenticated() // All other requests require authentication
             )
-            // Configure OAuth2 Resource Server for JWT validation
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
-                    // Use a custom JWT converter to extract roles from Keycloak JWT claims
                     .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
             )
-            // Configure session management to be stateless, as JWTs handle authentication per request
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
         return http.build();
     }
 
-    /**
-     * Configures a custom JwtAuthenticationConverter to extract roles (authorities) from the JWT.
-     * Keycloak typically puts roles in a custom claim (e.g., "realm_access.roles" for realm roles).
-     * @return A configured JwtAuthenticationConverter.
-     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        // Set the claim name where Keycloak stores the roles.
-        // For realm roles, it's commonly "realm_access.roles".
-        // For client roles, it might be "resource_access.<client-id>.roles".
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("realm_access.roles"); // Or "resource_access.<client-id>.roles"
-        // Add a prefix to the extracted roles (e.g., "ADMIN" becomes "ROLE_ADMIN")
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("realm_access.roles");
         grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
     }
+
+    // The RequestInterceptor bean has been moved to FeignClientConfiguration.java
+    // Do NOT define it here again.
 }

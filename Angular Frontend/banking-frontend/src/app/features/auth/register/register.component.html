@@ -1,55 +1,319 @@
-<div class="register-container">
-    <h2>Register for Banking App</h2>
-    <form (ngSubmit)="onSubmit()" #formRef="ngForm">
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" [(ngModel)]="registrationForm.username" required>
+<!-- Navigation Bar -->
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <i class="fas fa-university"></i>
+        <!-- Replace with your bank logo -->
+        <img src="assets/images/bank-logo.png" alt="Bank Logo" class="nav-logo-img" style="display: none;">
+      </div>
+      <div class="nav-brand-text">
+        <h3>SecureBank</h3>
+        <span>Trusted Banking Solutions</span>
+      </div>
+    </div>
+    
+    <div class="nav-actions">
+      <button type="button" (click)="goToLogin()" class="nav-login-btn">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Login</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Registration Content -->
+<div class="register-wrapper">
+  <div class="register-container">
+    <!-- Header Section -->
+    <div class="register-header">
+      <div class="header-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>Create Your Account</h2>
+      <p>Join thousands of satisfied customers and experience secure banking</p>
+    </div>
+
+    <!-- Registration Form -->
+    <form (ngSubmit)="onSubmit()" #formRef="ngForm" class="register-form">
+      <!-- Personal Information Section -->
+      <div class="form-section">
+        <div class="section-header">
+          <i class="fas fa-user"></i>
+          <h4>Personal Information</h4>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">
+              <i class="fas fa-user"></i>
+              First Name
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="firstName" 
+                name="firstName" 
+                [(ngModel)]="registrationForm.firstName" 
+                required
+                placeholder="Enter your first name"
+                #firstNameRef="ngModel">
+              <div class="input-border"></div>
+            </div>
+            <div *ngIf="firstNameRef.invalid && firstNameRef.touched" class="error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              First name is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">
+              <i class="fas fa-user"></i>
+              Last Name
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="lastName" 
+                name="lastName" 
+                [(ngModel)]="registrationForm.lastName" 
+                required
+                placeholder="Enter your last name"
+                #lastNameRef="ngModel">
+              <div class="input-border"></div>
+            </div>
+            <div *ngIf="lastNameRef.invalid && lastNameRef.touched" class="error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              Last name is required
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" [(ngModel)]="registrationForm.password" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dateOfBirth">
+              <i class="fas fa-calendar-alt"></i>
+              Date of Birth
+            </label>
+            <div class="input-container">
+              <input 
+                type="date" 
+                id="dateOfBirth" 
+                name="dateOfBirth" 
+                [(ngModel)]="registrationForm.dateOfBirth" 
+                required
+                #dobRef="ngModel">
+              <div class="input-border"></div>
+            </div>
+            <div *ngIf="dobRef.invalid && dobRef.touched" class="error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              Date of birth is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNumber">
+              <i class="fas fa-phone"></i>
+              Phone Number
+            </label>
+            <div class="input-container">
+              <input 
+                type="tel" 
+                id="phoneNumber" 
+                name="phoneNumber" 
+                [(ngModel)]="registrationForm.phoneNumber" 
+                required
+                placeholder="Enter your phone number"
+                #phoneRef="ngModel">
+              <div class="input-border"></div>
+            </div>
+            <div *ngIf="phoneRef.invalid && phoneRef.touched" class="error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              Phone number is required
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Information Section -->
+      <div class="form-section">
+        <div class="section-header">
+          <i class="fas fa-shield-alt"></i>
+          <h4>Account Information</h4>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="username">
+              <i class="fas fa-at"></i>
+              Username
+            </label>
+            <div class="input-container">
+              <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                [(ngModel)]="registrationForm.username" 
+                required
+                placeholder="Choose a unique username"
+                #usernameRef="ngModel">
+              <div class="input-border"></div>
+            </div>
+            <div *ngIf="usernameRef.invalid && usernameRef.touched" class="error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              Username is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">
+              <i class="fas fa-envelope"></i>
+              Email Address
+            </label>
+            <div class="input-container">
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                [(ngModel)]="registrationForm.email" 
+                required
+                placeholder="Enter your email address"
+                #emailRef="ngModel">
+              <div class="input-border"></div>
+            </div>
+            <div *ngIf="emailRef.invalid && emailRef.touched" class="error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              Valid email is required
+            </div>
+          </div>
         </div>
 
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" [(ngModel)]="registrationForm.email" required>
+        <div class="form-group full-width">
+          <label for="password">
+            <i class="fas fa-lock"></i>
+            Password
+          </label>
+          <div class="input-container password-container">
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              id="password" 
+              name="password" 
+              [(ngModel)]="registrationForm.password" 
+              required
+              placeholder="Create a strong password"
+              #passwordRef="ngModel">
+            <button type="button" class="password-toggle" (click)="togglePassword()">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+            <div class="input-border"></div>
+          </div>
+          <div class="password-strength">
+            <div class="strength-indicator" [class.weak]="getPasswordStrength() === 'weak'" 
+                 [class.medium]="getPasswordStrength() === 'medium'" 
+                 [class.strong]="getPasswordStrength() === 'strong'">
+              <div class="strength-bar"></div>
+              <div class="strength-bar"></div>
+              <div class="strength-bar"></div>
+            </div>
+            <span class="strength-text">{{ getPasswordStrengthText() }}</span>
+          </div>
+          <div *ngIf="passwordRef.invalid && passwordRef.touched" class="error-text">
+            <i class="fas fa-exclamation-circle"></i>
+            Password is required
+          </div>
         </div>
+      </div>
 
-        <div class="form-group">
-            <label for="firstName">First Name:</label>
-            <input type="text" id="firstName" name="firstName" [(ngModel)]="registrationForm.firstName" required>
+      <!-- Contact Information Section -->
+      <div class="form-section">
+        <div class="section-header">
+          <i class="fas fa-map-marker-alt"></i>
+          <h4>Contact Information</h4>
         </div>
-
-        <div class="form-group">
-            <label for="lastName">Last Name:</label>
-            <input type="text" id="lastName" name="lastName" [(ngModel)]="registrationForm.lastName" required>
+        
+        <div class="form-group full-width">
+          <label for="address">
+            <i class="fas fa-home"></i>
+            Address
+          </label>
+          <div class="input-container">
+            <textarea 
+              id="address" 
+              name="address" 
+              [(ngModel)]="registrationForm.address" 
+              required
+              placeholder="Enter your complete address"
+              rows="3"
+              #addressRef="ngModel"></textarea>
+            <div class="input-border"></div>
+          </div>
+          <div *ngIf="addressRef.invalid && addressRef.touched" class="error-text">
+            <i class="fas fa-exclamation-circle"></i>
+            Address is required
+          </div>
         </div>
+      </div>
 
-        <div class="form-group">
-            <label for="dateOfBirth">Date of Birth:</label>
-            <input type="date" id="dateOfBirth" name="dateOfBirth" [(ngModel)]="registrationForm.dateOfBirth" required>
+      <!-- Terms and Conditions -->
+      <div class="terms-section">
+        <label class="checkbox-container">
+          <input type="checkbox" [(ngModel)]="agreeToTerms" name="agreeToTerms" required>
+          <span class="checkmark">
+            <i class="fas fa-check"></i>
+          </span>
+          <span class="checkbox-text">
+            I agree to the <a href="#" class="terms-link">Terms & Conditions</a> and 
+            <a href="#" class="terms-link">Privacy Policy</a>
+          </span>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        [disabled]="!formRef.valid || !agreeToTerms || isSubmitting" 
+        class="register-button"
+        [class.loading]="isSubmitting">
+        <div class="button-content">
+          <div *ngIf="!isSubmitting" class="button-normal">
+            <i class="fas fa-user-plus"></i>
+            <span>Create Account</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div *ngIf="isSubmitting" class="button-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Creating Account...</span>
+          </div>
         </div>
-
-        <div class="form-group">
-            <label for="address">Address:</label>
-            <input type="text" id="address" name="address" [(ngModel)]="registrationForm.address" required>
-        </div>
-
-        <div class="form-group">
-            <label for="phoneNumber">Phone Number:</label>
-            <input type="tel" id="phoneNumber" name="phoneNumber" [(ngModel)]="registrationForm.phoneNumber" required>
-        </div>
-
-        <button type="submit" [disabled]="!formRef.valid" class="register-button">Register</button>
+      </button>
     </form>
 
+    <!-- Messages -->
     <div *ngIf="errorMessage" class="message error-message">
-        {{ errorMessage }}
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ errorMessage }}</span>
     </div>
+    
     <div *ngIf="successMessage" class="message success-message">
-        {{ successMessage }}
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage }}</span>
     </div>
 
-    <p class="login-link">Already have an account? <a routerLink="/login">Login here</a></p>
+    <!-- Login Link -->
+    <div class="login-redirect">
+      <p>Already have an account?</p>
+      <button type="button" (click)="goToLogin()" class="login-link-btn">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Login here</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Background Animation -->
+  <div class="background-animation">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+  </div>
 </div>

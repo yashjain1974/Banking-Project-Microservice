@@ -86,6 +86,10 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
             </dependency>
+            <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
             <!-- Spring Cloud OpenFeign (for UserClient) -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
@@ -101,6 +105,11 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
             </dependency>
+            
+            <dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+</dependency>
             <!-- Spring Boot DevTools (optional) -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
