@@ -3,16 +3,16 @@
   <div class="nav-container">
     <div class="nav-brand">
       <div class="nav-logo">
-        <i class="fas fa-university"></i>
+        <!-- <i class="fas fa-university"></i> -->
         <!-- Replace with your bank logo -->
-        <img src="assets/images/bank-logo.png" alt="Bank Logo" class="nav-logo-img" style="display: none;">
+        <img src="/assets/images/UGDI.png" alt="Bank Logo" class="nav-logo-img">
       </div>
       <div class="nav-brand-text">
-        <h3>SecureBank</h3>
-        <span>Trusted Banking Solutions</span>
+        <h3>UGDI</h3>
+        <span>Digital Banking Portal</span>
       </div>
     </div>
-    
+
     <div class="nav-actions">
       <button type="button" (click)="goToLogin()" class="nav-login-btn">
         <i class="fas fa-sign-in-alt"></i>
@@ -42,7 +42,7 @@
           <i class="fas fa-user"></i>
           <h4>Personal Information</h4>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">
@@ -50,14 +50,8 @@
               First Name
             </label>
             <div class="input-container">
-              <input 
-                type="text" 
-                id="firstName" 
-                name="firstName" 
-                [(ngModel)]="registrationForm.firstName" 
-                required
-                placeholder="Enter your first name"
-                #firstNameRef="ngModel">
+              <input type="text" id="firstName" name="firstName" [(ngModel)]="registrationForm.firstName" required
+                placeholder="Enter your first name" #firstNameRef="ngModel">
               <div class="input-border"></div>
             </div>
             <div *ngIf="firstNameRef.invalid && firstNameRef.touched" class="error-text">
@@ -72,14 +66,8 @@
               Last Name
             </label>
             <div class="input-container">
-              <input 
-                type="text" 
-                id="lastName" 
-                name="lastName" 
-                [(ngModel)]="registrationForm.lastName" 
-                required
-                placeholder="Enter your last name"
-                #lastNameRef="ngModel">
+              <input type="text" id="lastName" name="lastName" [(ngModel)]="registrationForm.lastName" required
+                placeholder="Enter your last name" #lastNameRef="ngModel">
               <div class="input-border"></div>
             </div>
             <div *ngIf="lastNameRef.invalid && lastNameRef.touched" class="error-text">
@@ -96,12 +84,7 @@
               Date of Birth
             </label>
             <div class="input-container">
-              <input 
-                type="date" 
-                id="dateOfBirth" 
-                name="dateOfBirth" 
-                [(ngModel)]="registrationForm.dateOfBirth" 
-                required
+              <input type="date" id="dateOfBirth" name="dateOfBirth" [(ngModel)]="registrationForm.dateOfBirth" required
                 #dobRef="ngModel">
               <div class="input-border"></div>
             </div>
@@ -117,14 +100,8 @@
               Phone Number
             </label>
             <div class="input-container">
-              <input 
-                type="tel" 
-                id="phoneNumber" 
-                name="phoneNumber" 
-                [(ngModel)]="registrationForm.phoneNumber" 
-                required
-                placeholder="Enter your phone number"
-                #phoneRef="ngModel">
+              <input type="tel" id="phoneNumber" name="phoneNumber" [(ngModel)]="registrationForm.phoneNumber" required
+                placeholder="Enter your phone number" #phoneRef="ngModel">
               <div class="input-border"></div>
             </div>
             <div *ngIf="phoneRef.invalid && phoneRef.touched" class="error-text">
@@ -141,7 +118,7 @@
           <i class="fas fa-shield-alt"></i>
           <h4>Account Information</h4>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group">
             <label for="username">
@@ -149,14 +126,8 @@
               Username
             </label>
             <div class="input-container">
-              <input 
-                type="text" 
-                id="username" 
-                name="username" 
-                [(ngModel)]="registrationForm.username" 
-                required
-                placeholder="Choose a unique username"
-                #usernameRef="ngModel">
+              <input type="text" id="username" name="username" [(ngModel)]="registrationForm.username" required
+                placeholder="Choose a unique username" #usernameRef="ngModel">
               <div class="input-border"></div>
             </div>
             <div *ngIf="usernameRef.invalid && usernameRef.touched" class="error-text">
@@ -171,14 +142,8 @@
               Email Address
             </label>
             <div class="input-container">
-              <input 
-                type="email" 
-                id="email" 
-                name="email" 
-                [(ngModel)]="registrationForm.email" 
-                required
-                placeholder="Enter your email address"
-                #emailRef="ngModel">
+              <input type="email" id="email" name="email" [(ngModel)]="registrationForm.email" required
+                placeholder="Enter your email address" #emailRef="ngModel">
               <div class="input-border"></div>
             </div>
             <div *ngIf="emailRef.invalid && emailRef.touched" class="error-text">
@@ -194,13 +159,8 @@
             Password
           </label>
           <div class="input-container password-container">
-            <input 
-              [type]="showPassword ? 'text' : 'password'" 
-              id="password" 
-              name="password" 
-              [(ngModel)]="registrationForm.password" 
-              required
-              placeholder="Create a strong password"
+            <input [type]="showPassword ? 'text' : 'password'" id="password" name="password"
+              [(ngModel)]="registrationForm.password" required placeholder="Create a strong password"
               #passwordRef="ngModel">
             <button type="button" class="password-toggle" (click)="togglePassword()">
               <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -208,9 +168,8 @@
             <div class="input-border"></div>
           </div>
           <div class="password-strength">
-            <div class="strength-indicator" [class.weak]="getPasswordStrength() === 'weak'" 
-                 [class.medium]="getPasswordStrength() === 'medium'" 
-                 [class.strong]="getPasswordStrength() === 'strong'">
+            <div class="strength-indicator" [class.weak]="getPasswordStrength() === 'weak'"
+              [class.medium]="getPasswordStrength() === 'medium'" [class.strong]="getPasswordStrength() === 'strong'">
               <div class="strength-bar"></div>
               <div class="strength-bar"></div>
               <div class="strength-bar"></div>
@@ -230,21 +189,15 @@
           <i class="fas fa-map-marker-alt"></i>
           <h4>Contact Information</h4>
         </div>
-        
+
         <div class="form-group full-width">
           <label for="address">
             <i class="fas fa-home"></i>
             Address
           </label>
           <div class="input-container">
-            <textarea 
-              id="address" 
-              name="address" 
-              [(ngModel)]="registrationForm.address" 
-              required
-              placeholder="Enter your complete address"
-              rows="3"
-              #addressRef="ngModel"></textarea>
+            <textarea id="address" name="address" [(ngModel)]="registrationForm.address" required
+              placeholder="Enter your complete address" rows="3" #addressRef="ngModel"></textarea>
             <div class="input-border"></div>
           </div>
           <div *ngIf="addressRef.invalid && addressRef.touched" class="error-text">
@@ -262,17 +215,14 @@
             <i class="fas fa-check"></i>
           </span>
           <span class="checkbox-text">
-            I agree to the <a href="#" class="terms-link">Terms & Conditions</a> and 
+            I agree to the <a href="#" class="terms-link">Terms & Conditions</a> and
             <a href="#" class="terms-link">Privacy Policy</a>
           </span>
         </label>
       </div>
 
       <!-- Submit Button -->
-      <button 
-        type="submit" 
-        [disabled]="!formRef.valid || !agreeToTerms || isSubmitting" 
-        class="register-button"
+      <button type="submit" [disabled]="!formRef.valid || !agreeToTerms || isSubmitting" class="register-button"
         [class.loading]="isSubmitting">
         <div class="button-content">
           <div *ngIf="!isSubmitting" class="button-normal">
@@ -293,7 +243,7 @@
       <i class="fas fa-exclamation-triangle"></i>
       <span>{{ errorMessage }}</span>
     </div>
-    
+
     <div *ngIf="successMessage" class="message success-message">
       <i class="fas fa-check-circle"></i>
       <span>{{ successMessage }}</span>

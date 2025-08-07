@@ -2,11 +2,12 @@
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // For ngModel and form handling
 import { CardService } from '../card.service'; // Import CardService
 import { AccountService } from '../../accounts/account.service'; // To get user's accounts
 
-import { Router } from '@angular/router'; // Import Router
+
+import { Router } from '@angular/router'; // Import Router for navigation
 import { AccountResponse } from '../../../shared/models/account.model';
 import { CardRequest, CardResponse, CardType } from '../../../shared/models/card.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,13 +24,13 @@ export class CardIssuanceComponent implements OnInit {
   cardForm: CardRequest = {
     userId: '',
     accountId: '',
-    cardType: CardType.MASTERCARD, // Default card type
+    cardType: CardType.VISA, // Default card type (from your HTML)
     issueDate: '',
     expiryDate: '',
-    transactionLimit: 10000 // Default limit
+    transactionLimit: 10000 // Default limit (from your HTML)
   };
-  cardTypes = Object.values(CardType); // For dropdown
-
+  cardTypes = Object.values(CardType); // For dropdown/radio options
+  CardType = CardType; // For template access
   loading: boolean = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -118,7 +119,7 @@ export class CardIssuanceComponent implements OnInit {
     this.cardForm = {
       userId: this.cardForm.userId, // Keep user ID
       accountId: this.accounts.length > 0 ? this.accounts[0].accountId : '',
-      cardType: CardType.MASTERCARD,
+      cardType: CardType.VISA, // Reset to default type
       issueDate: '',
       expiryDate: '',
       transactionLimit: 10000

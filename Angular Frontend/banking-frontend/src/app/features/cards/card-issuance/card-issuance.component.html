@@ -1,48 +1,102 @@
-<div class="card-issuance-container">
-    <h2>Issue New Card</h2>
+<div class="container">
+    <div class="header">
+        <h1>Issue Credit Card</h1>
+        <p>Complete the form below to issue your new credit card</p>
+    </div>
 
     <div *ngIf="loading" class="loading-message">Processing card issuance...</div>
     <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
     <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
 
-    <div *ngIf="!loading && accounts.length > 0" class="card-form-section">
-        <form (ngSubmit)="onSubmit()" #cardIssuanceForm="ngForm">
+    <div class="form-container" *ngIf="!loading && accounts.length > 0">
+        <form class="credit-card-form" (ngSubmit)="onSubmit()" #cardIssuanceForm="ngForm">
+            <!-- Account to be Linked -->
             <div class="form-group">
-                <label for="accountId">Link to Account:</label>
+                <label for="accountId">Account to be Linked</label>
                 <select id="accountId" name="accountId" [(ngModel)]="cardForm.accountId" required>
+                    <option value="">Select Account</option>
                     <option *ngFor="let account of accounts" [value]="account.accountId">
-                        {{ account.accountNumber }} ({{ account.accountType }} - Balance: {{ account.balance |
+                        {{ account.accountNumber }} - {{ account.accountType }} (Balance: {{ account.balance |
                         currency:'INR':'symbol':'1.2-2' }})
                     </option>
                 </select>
             </div>
 
+            <!-- Card Type -->
             <div class="form-group">
-                <label for="cardType">Card Type:</label>
-                <select id="cardType" name="cardType" [(ngModel)]="cardForm.cardType" required>
-                    <option *ngFor="let type of cardTypes" [value]="type">{{ type }}</option>
-                </select>
+                <label>Card Type</label>
+                <div class="card-type-options">
+                    <div class="card-option">
+                        <input type="radio" id="visa" name="cardType" [value]="CardType.VISA"
+                            [(ngModel)]="cardForm.cardType" required>
+                        <label for="visa" class="card-label">
+                            <div class="card-icon visa">VISA</div>
+                            <span>Visa</span>
+                        </label>
+                    </div>
+                    <div class="card-option">
+                        <input type="radio" id="mastercard" name="cardType" [value]="CardType.MASTERCARD"
+                            [(ngModel)]="cardForm.cardType" required>
+                        <label for="mastercard" class="card-label">
+                            <div class="card-icon mastercard">MC</div>
+                            <span>Mastercard</span>
+                        </label>
+                    </div>
+                    <div class="card-option">
+                        <input type="radio" id="rupay" name="cardType" [value]="CardType.RUPAY"
+                            [(ngModel)]="cardForm.cardType" required>
+                        <label for="rupay" class="card-label">
+                            <div class="card-icon rupay">RuPay</div>
+                            <span>RuPay</span>
+                        </label>
+                    </div>
+                    <!-- Add other card types if needed -->
+                    <div class="card-option">
+                        <input type="radio" id="amex" name="cardType" [value]="CardType.AMERICAN_EXPRESS"
+                            [(ngModel)]="cardForm.cardType" required>
+                        <label for="amex" class="card-label">
+                            <div class="card-icon amex">AMEX</div>
+                            <span>Amex</span>
+                        </label>
+                    </div>
+                    <div class="card-option">
+                        <input type="radio" id="discover" name="cardType" [value]="CardType.DISCOVER"
+                            [(ngModel)]="cardForm.cardType" required>
+                        <label for="discover" class="card-label">
+                            <div class="card-icon discover">DISC</div>
+                            <span>Discover</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
+            <!-- Transaction Limit -->
             <div class="form-group">
-                <label for="transactionLimit">Transaction Limit (INR):</label>
-                <input type="number" id="transactionLimit" name="transactionLimit"
-                    [(ngModel)]="cardForm.transactionLimit" required min="1" step="any">
+                <label for="transactionLimit">Transaction Limit</label>
+                <div class="input-wrapper">
+                    <span class="currency-symbol">₹</span>
+                    <input type="number" id="transactionLimit" name="transactionLimit"
+                        [(ngModel)]="cardForm.transactionLimit" placeholder="Enter amount (e.g., 100000)" min="1000"
+                        max="10000000" step="1000" required>
+                </div>
             </div>
 
+            <!-- Issue Date -->
             <div class="form-group">
-                <label for="issueDate">Issue Date:</label>
-                <input type="date" id="issueDate" name="issueDate" [(ngModel)]="cardForm.issueDate" required readonly>
+                <label for="issueDate">Issue Date</label>
+                <input type="date" id="issueDate" name="issueDate" [(ngModel)]="cardForm.issueDate" required>
             </div>
 
+            <!-- Expiry Date -->
             <div class="form-group">
-                <label for="expiryDate">Expiry Date:</label>
-                <input type="date" id="expiryDate" name="expiryDate" [(ngModel)]="cardForm.expiryDate" required
-                    readonly>
+                <label for="expiryDate">Expiry Date</label>
+                <input type="date" id="expiryDate" name="expiryDate" [(ngModel)]="cardForm.expiryDate" required>
             </div>
 
-            <button type="submit" [disabled]="!cardIssuanceForm.valid || !cardForm.accountId" class="issue-button">Issue
-                Card</button>
+            <!-- Submit Button -->
+            <button type="submit" [disabled]="!cardIssuanceForm.valid || !cardForm.accountId" class="submit-btn">
+                Issue Credit Card
+            </button>
         </form>
     </div>
 

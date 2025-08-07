@@ -1,72 +1,144 @@
-<div class="account-management-container">
-    <h2>Account Management</h2>
-    <button (click)="logout()" class="logout-button">Logout</button>
-
-    <div class="search-section">
-        <h3>Search Accounts</h3>
-        <form (ngSubmit)="onSearch()">
-            <div class="form-group">
-                <label for="searchType">Search By:</label>
-                <select id="searchType" name="searchType" [(ngModel)]="searchType">
-                    <option value="userId">User ID</option>
-                    <option value="accountId">Account ID</option>
-                    <option value="accountNumber">Account Number</option>
-                </select>
+<div class="container-fluid py-4 fade-in">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Admin Dashboard - Account Management
+                            </h2>
+                            <p class="text-muted mb-0">Manage user KYC applications and verification status</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button (click)="logout()" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-sign-out-alt me-1"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="searchQuery">Query:</label>
-                <input type="text" id="searchQuery" name="searchQuery" [(ngModel)]="searchQuery"
-                    placeholder="Enter ID or Number">
+        </div>
+    </div>
+
+
+    <!-- Navigation Cards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Admin Features
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/loan-management"
+                                class="btn btn-outline-primary w-100 p-3 text-decoration-none">
+                                <i class="fas fa-money-bill-wave d-block mb-2 fs-4"></i>
+                                <strong>Manage Loans</strong>
+                                <small class="d-block text-muted">Loan applications & approvals</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/account-management" class="btn btn-primary  w-100 p-3 text-decoration-none">
+                                <i class="fas fa-university d-block mb-2 fs-4"></i>
+                                <strong>Manage Accounts</strong>
+                                <small class="d-block text-muted">User accounts & settings</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/user-management"
+                                class="btn btn-outline-info w-100 p-3 text-decoration-none">
+                                <i class="fas fa-users d-block mb-2 fs-4"></i>
+                                <strong>Manage Users</strong>
+                                <small class="d-block text-muted">User profiles & roles</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/admin-dashboard" class="btn btn-outline w-100 p-3 text-decoration-none">
+                                <i class="fas fa-shield-alt d-block mb-2 fs-4"></i>
+                                <strong>Manage KYC</strong>
+                                <small class="d-block">KYC verification center</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="search-button">Search</button>
-        </form>
+        </div>
     </div>
 
-    <div *ngIf="loading" class="loading-message">Searching for accounts...</div>
-    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+    <div class="account-management-container">
 
-    <div *ngIf="!loading && foundAccounts.length > 0" class="account-results-section">
-        <h3>Search Results ({{ foundAccounts.length }})</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Account ID</th>
-                    <th>User ID</th>
-                    <th>Account Number</th>
-                    <th>Type</th>
-                    <th>Balance</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let account of foundAccounts">
-                    <td>{{ account.accountId | slice:0:8 }}...</td>
-                    <td>{{ account.userId | slice:0:8 }}...</td>
-                    <td>{{ account.accountNumber }}</td>
-                    <td>{{ account.accountType }}</td>
-                    <td>{{ account.balance | currency:'INR':'symbol':'1.2-2' }}</td>
-                    <td><span [ngClass]="getAccountStatusClass(account.status)">{{ account.status }}</span></td>
-                    <td class="actions">
-                        <button (click)="updateAccountStatus(account.accountId, AccountStatus.ACTIVE)"
-                            [disabled]="account.status === AccountStatus.ACTIVE"
-                            class="action-button active">Activate</button>
-                        <button (click)="updateAccountStatus(account.accountId, AccountStatus.BLOCKED)"
-                            [disabled]="account.status === AccountStatus.BLOCKED"
-                            class="action-button block">Block</button>
-                        <button (click)="updateAccountStatus(account.accountId, AccountStatus.CLOSED)"
-                            [disabled]="account.status === AccountStatus.CLOSED"
-                            class="action-button close">Close</button>
-                        <button (click)="deleteAccount(account.accountId)" class="action-button delete">Delete</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <div class="search-section">
+            <h3>Search Accounts</h3>
+            <form (ngSubmit)="onSearch()">
+                <div class="form-group">
+                    <label for="searchType">Search By:</label>
+                    <select id="searchType" name="searchType" [(ngModel)]="searchType">
+                        <option value="userId">User ID</option>
+                        <option value="accountId">Account ID</option>
+                        <option value="accountNumber">Account Number</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchQuery">Query:</label>
+                    <input type="text" id="searchQuery" name="searchQuery" [(ngModel)]="searchQuery"
+                        placeholder="Enter ID or Number">
+                </div>
+                <button type="submit" class="search-button">Search</button>
+            </form>
+        </div>
 
-    <div *ngIf="!loading && foundAccounts.length === 0 && !successMessage && searchQuery.trim()"
-        class="no-results-message">
-        <p>No accounts found matching your search query.</p>
+        <div *ngIf="loading" class="loading-message">Searching for accounts...</div>
+        <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+        <div *ngIf="!loading && foundAccounts.length > 0" class="account-results-section">
+            <h3>Search Results ({{ foundAccounts.length }})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Account ID</th>
+                        <th>User ID</th>
+                        <th>Account Number</th>
+                        <th>Type</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let account of foundAccounts">
+                        <td>{{ account.accountId | slice:0:8 }}...</td>
+                        <td>{{ account.userId | slice:0:8 }}...</td>
+                        <td>{{ account.accountNumber }}</td>
+                        <td>{{ account.accountType }}</td>
+                        <td>{{ account.balance | currency:'INR':'symbol':'1.2-2' }}</td>
+                        <td><span [ngClass]="getAccountStatusClass(account.status)">{{ account.status }}</span></td>
+                        <td class="actions">
+                            <button (click)="updateAccountStatus(account.accountId, AccountStatus.ACTIVE)"
+                                [disabled]="account.status === AccountStatus.ACTIVE"
+                                class="action-button active">Activate</button>
+                            <button (click)="updateAccountStatus(account.accountId, AccountStatus.BLOCKED)"
+                                [disabled]="account.status === AccountStatus.BLOCKED"
+                                class="action-button block">Block</button>
+                            <button (click)="updateAccountStatus(account.accountId, AccountStatus.CLOSED)"
+                                [disabled]="account.status === AccountStatus.CLOSED"
+                                class="action-button close">Close</button>
+                            <button (click)="deleteAccount(account.accountId)"
+                                class="action-button delete">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="!loading && foundAccounts.length === 0 && !successMessage && searchQuery.trim()"
+            class="no-results-message">
+            <p>No accounts found matching your search query.</p>
+        </div>
     </div>
-</div>

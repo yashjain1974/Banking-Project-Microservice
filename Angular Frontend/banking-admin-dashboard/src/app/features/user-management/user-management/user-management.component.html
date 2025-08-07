@@ -1,99 +1,173 @@
-<div class="user-management-container">
-  <h2>User Profile Management</h2>
-  <button (click)="loadAllUsers()" class="refresh-button">Refresh Users</button>
-
-  <div *ngIf="loading" class="loading-message">Loading user profiles...</div>
-
-  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-  <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
-
-  <div *ngIf="!loading && allUsers.length > 0" class="user-list-section">
-    <h3>All User Profiles ({{ allUsers.length }})</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>User ID</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Full Name</th>
-          <th>Role</th>
-          <th>KYC Status</th>
-          <th>Created At</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of allUsers">
-          <td>{{ user.userId | slice:0:8 }}...</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.firstName }} {{ user.lastName }}</td>
-          <td>{{ user.role }}</td>
-          <td><span [ngClass]="{'status-pending': user.kycStatus === 'PENDING', 'status-verified': user.kycStatus === 'VERIFIED', 'status-rejected': user.kycStatus === 'REJECTED'}">{{ user.kycStatus }}</span></td>
-          <td>{{ user.createdAt | date:'short' }}</td>
-          <td class="actions">
-            <button (click)="editUser(user)" class="action-button edit">Edit</button>
-            <button (click)="deleteUser(user.userId, user.username)" class="action-button delete">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="!loading && allUsers.length === 0 && !successMessage" class="no-users-message">
-    <p>No user profiles found in the system.</p>
-  </div>
-
-  <!-- Edit User Modal/Form -->
-  <div *ngIf="selectedUser" class="edit-user-modal">
-    <div class="modal-content">
-      <h3>Edit User: {{ selectedUser.username }}</h3>
-      <form (ngSubmit)="saveUserChanges()">
-        <div class="form-group">
-          <label for="editUsername">Username:</label>
-          <input type="text" id="editUsername" name="username" [(ngModel)]="editForm.username" required>
+<div class="container-fluid py-4 fade-in">
+  <!-- Header Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="card-title mb-1 text-primary">
+                <i class="fas fa-shield-alt me-2"></i>
+                Admin Dashboard - User Profile Management
+              </h2>
+              <p class="text-muted mb-0">Manage user KYC applications and verification status</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button (click)="loadAllUsers()" class="btn btn-outline-primary btn-sm" [disabled]="loading">
+                <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i>
+                {{ loading ? 'Loading...' : 'Refresh' }}
+              </button>
+              <button (click)="logout()" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-sign-out-alt me-1"></i>
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="editEmail">Email:</label>
-          <input type="email" id="editEmail" name="email" [(ngModel)]="editForm.email" required>
-        </div>
-        <div class="form-group">
-          <label for="editFirstName">First Name:</label>
-          <input type="text" id="editFirstName" name="firstName" [(ngModel)]="editForm.firstName">
-        </div>
-        <div class="form-group">
-          <label for="editLastName">Last Name:</label>
-          <input type="text" id="editLastName" name="lastName" [(ngModel)]="editForm.lastName">
-        </div>
-        <div class="form-group">
-          <label for="editDateOfBirth">Date of Birth:</label>
-          <input type="date" id="editDateOfBirth" name="dateOfBirth" [(ngModel)]="editForm.dateOfBirth">
-        </div>
-        <div class="form-group">
-          <label for="editAddress">Address:</label>
-          <input type="text" id="editAddress" name="address" [(ngModel)]="editForm.address">
-        </div>
-        <div class="form-group">
-          <label for="editPhoneNumber">Phone Number:</label>
-          <input type="text" id="editPhoneNumber" name="phoneNumber" [(ngModel)]="editForm.phoneNumber">
-        </div>
-        <div class="form-group">
-          <label for="editRole">Role:</label>
-          <select id="editRole" name="role" [(ngModel)]="editForm.role">
-            <option *ngFor="let role of userRoles" [value]="role">{{ role }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="editKycStatus">KYC Status:</label>
-          <select id="editKycStatus" name="kycStatus" [(ngModel)]="editForm.kycStatus">
-            <option *ngFor="let status of kycStatuses" [value]="status">{{ status }}</option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button type="submit" class="action-button save">Save Changes</button>
-          <button type="button" (click)="cancelEdit()" class="action-button cancel">Cancel</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- Navigation Cards -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            Admin Features
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <a routerLink="/loan-management" class="btn btn-outline-primary w-100 p-3 text-decoration-none">
+                <i class="fas fa-money-bill-wave d-block mb-2 fs-4"></i>
+                <strong>Manage Loans</strong>
+                <small class="d-block text-muted">Loan applications & approvals</small>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a routerLink="/account-management" class="btn btn-outline-success w-100 p-3 text-decoration-none">
+                <i class="fas fa-university d-block mb-2 fs-4"></i>
+                <strong>Manage Accounts</strong>
+                <small class="d-block text-muted">User accounts & settings</small>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a routerLink="/user-management" class="btn btn-primary w-100 p-3 text-decoration-none">
+                <i class="fas fa-users d-block mb-2 fs-4"></i>
+                <strong>Manage Users</strong>
+                <small class="d-block text-muted">User profiles & roles</small>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a routerLink="/admin-dashboard" class="btn btn-outline-primary w-100 p-3 text-decoration-none">
+                <i class="fas fa-shield-alt d-block mb-2 fs-4"></i>
+                <strong>Manage KYC</strong>
+                <small class="d-block ">KYC verification center</small>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="user-management-container">
+
+    <div *ngIf="loading" class="loading-message">Loading user profiles...</div>
+
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+
+    <div *ngIf="!loading && allUsers.length > 0" class="user-list-section">
+      <h3>All User Profiles ({{ allUsers.length }})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>KYC Status</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of allUsers">
+            <td>{{ user.userId | slice:0:8 }}...</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            <td>{{ user.role }}</td>
+            <td><span
+                [ngClass]="{'status-pending': user.kycStatus === 'PENDING', 'status-verified': user.kycStatus === 'VERIFIED', 'status-rejected': user.kycStatus === 'REJECTED'}">{{
+                user.kycStatus }}</span></td>
+            <td>{{ user.createdAt | date:'short' }}</td>
+            <td class="actions">
+              <button (click)="editUser(user)" class="action-button edit">Edit</button>
+              <button (click)="deleteUser(user.userId, user.username)" class="action-button delete">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && allUsers.length === 0 && !successMessage" class="no-users-message">
+      <p>No user profiles found in the system.</p>
+    </div>
+
+    <!-- Edit User Modal/Form -->
+    <div *ngIf="selectedUser" class="edit-user-modal">
+      <div class="modal-content">
+        <h3>Edit User: {{ selectedUser.username }}</h3>
+        <form (ngSubmit)="saveUserChanges()">
+          <div class="form-group">
+            <label for="editUsername">Username:</label>
+            <input type="text" id="editUsername" name="username" [(ngModel)]="editForm.username" required>
+          </div>
+          <div class="form-group">
+            <label for="editEmail">Email:</label>
+            <input type="email" id="editEmail" name="email" [(ngModel)]="editForm.email" required>
+          </div>
+          <div class="form-group">
+            <label for="editFirstName">First Name:</label>
+            <input type="text" id="editFirstName" name="firstName" [(ngModel)]="editForm.firstName">
+          </div>
+          <div class="form-group">
+            <label for="editLastName">Last Name:</label>
+            <input type="text" id="editLastName" name="lastName" [(ngModel)]="editForm.lastName">
+          </div>
+          <div class="form-group">
+            <label for="editDateOfBirth">Date of Birth:</label>
+            <input type="date" id="editDateOfBirth" name="dateOfBirth" [(ngModel)]="editForm.dateOfBirth">
+          </div>
+          <div class="form-group">
+            <label for="editAddress">Address:</label>
+            <input type="text" id="editAddress" name="address" [(ngModel)]="editForm.address">
+          </div>
+          <div class="form-group">
+            <label for="editPhoneNumber">Phone Number:</label>
+            <input type="text" id="editPhoneNumber" name="phoneNumber" [(ngModel)]="editForm.phoneNumber">
+          </div>
+          <div class="form-group">
+            <label for="editRole">Role:</label>
+            <select id="editRole" name="role" [(ngModel)]="editForm.role">
+              <option *ngFor="let role of userRoles" [value]="role">{{ role }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editKycStatus">KYC Status:</label>
+            <select id="editKycStatus" name="kycStatus" [(ngModel)]="editForm.kycStatus">
+              <option *ngFor="let status of kycStatuses" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="action-button save">Save Changes</button>
+            <button type="button" (click)="cancelEdit()" class="action-button cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

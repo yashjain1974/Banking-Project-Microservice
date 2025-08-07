@@ -1,44 +1,363 @@
+<!-- loan-application.component.html -->
 <div class="loan-application-container">
-    <h2>Apply for a New Loan</h2>
+    <!-- Header Section -->
+    <div class="loan-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title">
+                    <i class="fas fa-hand-holding-usd me-3"></i>
+                    Apply for a New Loan
+                </h1>
+                <p class="page-subtitle">Transform your dreams into reality with our flexible loan solutions</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="loan-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-percentage text-success"></i>
+                        <span>Starting from 8.5% p.a.</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock text-info"></i>
+                        <span>Quick Approval</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div *ngIf="loading" class="loading-message">Submitting your application...</div>
-    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+    <!-- Loading Message -->
+    <div *ngIf="loading" class="loading-message">
+        <div class="spinner-border text-primary me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        Submitting your application...
+    </div>
 
-    <div class="loan-form-section">
-        <form (ngSubmit)="onSubmit()" #formRef="ngForm">
-            <div class="form-group">
-                <label for="loanType">Loan Type:</label>
-                <select id="loanType" name="loanType" [(ngModel)]="loanForm.loanType" required>
-                    <option *ngFor="let type of loanTypes" [value]="type">{{ type }}</option>
-                </select>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
+    </div>
+
+    <div class="row">
+        <!-- Loan Application Form -->
+        <div class="col-lg-8">
+            <div class="loan-form-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-contract me-2"></i>Loan Application Form</h3>
+                    <p class="mb-0">Fill in your details to get started with your loan application</p>
+                </div>
+
+                <form (ngSubmit)="onSubmit()" #formRef="ngForm" class="loan-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="loanType" class="form-label">
+                                    <i class="fas fa-tags me-2"></i>Loan Type
+                                </label>
+                                <select id="loanType" name="loanType" class="form-select"
+                                    [(ngModel)]="loanForm.loanType" required (change)="onLoanTypeChange($event)">
+                                    <option value="">Select loan type</option>
+                                    <option *ngFor="let type of loanTypes" [value]="type">{{ getLoanTypeDisplay(type) }}
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">Please select a loan type.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="amount" class="form-label">
+                                    <i class="fas fa-rupee-sign me-2"></i>Loan Amount (INR)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" id="amount" name="amount" class="form-control"
+                                        [(ngModel)]="loanForm.amount" required min="1000" max="10000000" step="1000"
+                                        placeholder="Enter loan amount" (input)="calculateEmiPreview()">
+                                    <div class="invalid-feedback">Please enter a valid loan amount (₹1,000 -
+                                        ₹1,00,00,000).</div>
+                                </div>
+                                <div class="form-text">Minimum: ₹1,000 | Maximum: ₹1,00,00,000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="tenureInMonths" class="form-label">
+                                    <i class="fas fa-calendar-alt me-2"></i>Tenure (Months)
+                                </label>
+                                <input type="number" id="tenureInMonths" name="tenureInMonths" class="form-control"
+                                    [(ngModel)]="loanForm.tenureInMonths" required min="6" max="84"
+                                    placeholder="Enter tenure in months" (input)="calculateEmiPreview()">
+                                <div class="form-text">Choose between 6 to 84 months</div>
+                                <div class="invalid-feedback">Please enter a valid tenure (6-84 months).</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="interestRate" class="form-label">
+                                    <i class="fas fa-percent me-2"></i>Interest Rate (% per annum)
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" id="interestRate" name="interestRate" class="form-control"
+                                        [(ngModel)]="loanForm.interestRate" required min="1" max="50" step="0.01"
+                                        placeholder="Enter interest rate" (input)="calculateEmiPreview()">
+                                    <span class="input-group-text">%</span>
+                                    <div class="invalid-feedback">Please enter a valid interest rate (1-50%).</div>
+                                </div>
+                                <div class="form-text">Rate depends on loan type and eligibility</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMI Preview -->
+                    <div *ngIf="calculatedEmi !== null && calculatedEmi > 0" class="emi-preview-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">
+                                    <i class="fas fa-calculator me-2"></i>Estimated Monthly EMI
+                                </h5>
+                                <p class="text-muted mb-0">This is an approximate calculation based on reducing balance
+                                    method</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="emi-amount">{{ calculatedEmi | currency:'INR':'symbol':'1.0-0' }}</div>
+                            </div>
+                        </div>
+                        <div class="emi-breakdown mt-3">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <small class="text-muted">Principal Amount</small>
+                                    <div class="fw-bold">{{ loanForm.amount | currency:'INR':'symbol':'1.0-0' }}</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Total Interest</small>
+                                    <div class="fw-bold">{{ getTotalInterest() | currency:'INR':'symbol':'1.0-0' }}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Total Payable</small>
+                                    <div class="fw-bold">{{ getTotalAmount() | currency:'INR':'symbol':'1.0-0' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing Fee Info -->
+                        <div class="processing-fee-info mt-3">
+                            <div class="row">
+                                <div class="col-12">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Processing fee: {{ getProcessingFee() | currency:'INR':'symbol':'1.0-0' }}
+                                        ({{ getProcessingFeePercent() }}% of loan amount, min ₹500, max ₹25,000)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Checker -->
+                    <div *ngIf="loanForm.loanType && loanForm.amount > 0" class="eligibility-info">
+                        <h6><i class="fas fa-clipboard-check me-2"></i>Basic Eligibility Requirements</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="requirement-list">
+                                    <li><i class="fas fa-check text-success me-2"></i>Age: 21-65 years</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Regular income source</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Good credit score (650+)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="requirement-list">
+                                    <li><i class="fas fa-check text-success me-2"></i>Valid KYC documents</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>{{ getLoanSpecificRequirement() }}
+                                    </li>
+                                    <li><i class="fas fa-check text-success me-2"></i>No defaults in last 12 months</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="terms-section">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" [(ngModel)]="acceptTerms"
+                                name="acceptTerms" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#" class="text-decoration-none"
+                                    (click)="openTerms($event)">Terms and Conditions</a>
+                                and <a href="#" class="text-decoration-none" (click)="openPrivacyPolicy($event)">Privacy
+                                    Policy</a>
+                            </label>
+                            <div class="invalid-feedback">You must agree to the terms and conditions.</div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="marketingConsent"
+                                [(ngModel)]="marketingConsent" name="marketingConsent">
+                            <label class="form-check-label" for="marketingConsent">
+                                I consent to receive marketing communications about loan offers and financial products
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100"
+                        [disabled]="!formRef.valid || !acceptTerms || loading">
+                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <i *ngIf="!loading" class="fas fa-paper-plane me-2"></i>
+                        {{ loading ? 'Processing Application...' : 'Apply for Loan' }}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar Information -->
+        <div class="col-lg-4">
+            <!-- Loan Benefits -->
+            <div class="info-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-star me-2"></i>Why Choose UGDI Loans?</h5>
+                </div>
+                <div class="card-body">
+                    <div class="benefit-item">
+                        <i class="fas fa-bolt text-warning"></i>
+                        <div>
+                            <strong>Instant Approval</strong>
+                            <small>Get pre-approved within minutes</small>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        <div>
+                            <strong>Secure Process</strong>
+                            <small>Bank-grade security for your data</small>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-hand-holding-heart text-info"></i>
+                        <div>
+                            <strong>Flexible Terms</strong>
+                            <small>Customize your repayment schedule</small>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-headset text-primary"></i>
+                        <div>
+                            <strong>24/7 Support</strong>
+                            <small>Expert assistance anytime</small>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-mobile-alt text-secondary"></i>
+                        <div>
+                            <strong>Digital Experience</strong>
+                            <small>Complete process online</small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="amount">Loan Amount (INR):</label>
-                <input type="number" id="amount" name="amount" [(ngModel)]="loanForm.amount" required min="1" step="any"
-                    (input)="calculateEmiPreview()">
+            <!-- Interest Rates -->
+            <div class="info-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Current Interest Rates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="rate-item" [class.active]="loanForm.loanType === 'PERSONAL'">
+                        <span class="loan-name">Personal Loan</span>
+                        <span class="rate-range">10.5% - 24%</span>
+                    </div>
+                    <div class="rate-item" [class.active]="loanForm.loanType === 'HOME'">
+                        <span class="loan-name">Home Loan</span>
+                        <span class="rate-range">8.5% - 12%</span>
+                    </div>
+                    <div class="rate-item" [class.active]="loanForm.loanType === 'AUTO'">
+                        <span class="loan-name">Auto Mobile Loan</span>
+                        <span class="rate-range">9% - 15%</span>
+                    </div>
+                    <div class="rate-item" [class.active]="loanForm.loanType === 'BUSINESS'">
+                        <span class="loan-name">Business Loan</span>
+                        <span class="rate-range">12% - 20%</span>
+                    </div>
+                    <div class="rate-item" [class.active]="loanForm.loanType === 'EDUCATION'">
+                        <span class="loan-name">Education Loan</span>
+                        <span class="rate-range">8% - 16%</span>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-asterisk me-1"></i>
+                        Rates subject to eligibility and bank policies. Final rates may vary based on credit profile.
+                    </small>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="tenureInMonths">Tenure (Months):</label>
-                <!-- CRITICAL FIX: Ensure 'name' attribute matches the model property 'tenureInMonths' -->
-                <input type="number" id="tenureInMonths" name="tenureInMonths" [(ngModel)]="loanForm.tenureInMonths"
-                    required min="1" (input)="calculateEmiPreview()">
+            <!-- Required Documents -->
+            <div class="info-card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2"></i>Required Documents</h5>
+                </div>
+                <div class="card-body">
+                    <div class="document-category">
+                        <h6 class="fw-bold text-primary">Identity Proof</h6>
+                        <ul class="doc-list">
+                            <li>PAN Card</li>
+                            <li>Aadhaar Card</li>
+                            <li>Passport/Driving License</li>
+                        </ul>
+                    </div>
+                    <div class="document-category">
+                        <h6 class="fw-bold text-primary">Income Proof</h6>
+                        <ul class="doc-list">
+                            <li>Salary Slips (3 months)</li>
+                            <li>Bank Statements (6 months)</li>
+                            <li>ITR (2 years)</li>
+                        </ul>
+                    </div>
+                    <div class="document-category" *ngIf="loanForm.loanType === 'HOME'">
+                        <h6 class="fw-bold text-primary">Property Documents</h6>
+                        <ul class="doc-list">
+                            <li>Sale Agreement</li>
+                            <li>Property Papers</li>
+                            <li>NOC from Builder</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="interestRate">Interest Rate (% per annum):</label>
-                <input type="number" id="interestRate" name="interestRate" [(ngModel)]="loanForm.interestRate" required
-                    min="0.01" step="0.01" (input)="calculateEmiPreview()">
+            <!-- Contact Support -->
+            <div class="info-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-phone me-2"></i>Need Help?</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-3">Our loan experts are here to assist you</p>
+                    <div class="support-buttons">
+                        <a href="tel:1800-123-4567" class="btn btn-outline-primary btn-sm me-2 mb-2">
+                            <i class="fas fa-phone me-1"></i>1800-123-4567
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm mb-2" (click)="openLiveChat()">
+                            <i class="fas fa-comments me-1"></i>Live Chat
+                        </a>
+                    </div>
+                    <div class="support-hours mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Available 24/7 for assistance
+                        </small>
+                    </div>
+                </div>
             </div>
-
-            <div *ngIf="calculatedEmi !== null" class="emi-preview">
-                Estimated EMI: <strong>{{ calculatedEmi | currency:'INR':'symbol':'1.2-2' }}</strong>
-            </div>
-
-            <button type="submit" [disabled]="!formRef.valid || !loanForm.userId" class="apply-button">Apply
-                for Loan</button>
-        </form>
+        </div>
     </div>
 </div>

@@ -72,8 +72,8 @@ body {
 }
 
 .nav-logo {
-    width: 48px;
-    height: 48px;
+    width: 58px;
+    height: 58px;
     background: linear-gradient(135deg, #0769AD 0%, #1e88e5 50%, #054a7a 100%);
     border-radius: 14px;
     display: flex;
@@ -249,6 +249,46 @@ body {
         0 8px 25px rgba(239, 68, 68, 0.35),
         0 4px 12px rgba(239, 68, 68, 0.2);
     background: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%);
+}
+
+/* ... (existing CSS) ... */
+
+.nav-user-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* Adjusted gap */
+}
+
+/* NEW: Notification icon link */
+.notification-icon-link {
+    position: relative;
+    font-size: 1.5em;
+    /* Icon size */
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.notification-icon-link:hover {
+    color: #0769AD;
+    /* Hover color */
+}
+
+/* NEW: Notification badge (circle with count) */
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #dc3545;
+    /* Red color for new notifications */
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.7em;
+    font-weight: bold;
+    line-height: 1;
 }
 
 .logout-button:active {

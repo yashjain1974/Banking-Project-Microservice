@@ -8,6 +8,7 @@ import { AccountService } from '../account.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Observable } from 'rxjs';
 import { UserProfileService } from '../../user-management/user-profile/user-profile.service';
+import { RouterLink } from '@angular/router';
 
 
 
@@ -15,7 +16,7 @@ import { UserProfileService } from '../../user-management/user-profile/user-prof
 @Component({
   selector: 'app-account-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './account-management.component.html',
   styleUrls: ['./account-management.component.css']
 })

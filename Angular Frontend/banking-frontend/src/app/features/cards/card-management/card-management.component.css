@@ -1,185 +1,493 @@
-.card-management-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px;
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* General Body Styles (usually in global styles.css or main-layout.component.css) */
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-}
-
-h2 {
-    color: #007bff;
-    margin-bottom: 25px;
-    font-size: 2em;
-}
-
-.refresh-button {
-    padding: 10px 20px;
-    font-size: 1em;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 20px;
-}
-
-.refresh-button:hover {
-    background-color: #0056b3;
-}
-
-.loading-message,
-.no-cards-message {
-    margin-top: 20px;
-    font-size: 1.1em;
-    color: #6c757d;
-}
-
-.message {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 0.95em;
-    text-align: center;
-    width: 100%;
-    max-width: 900px;
-}
-
-.success-message {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.card-list {
-    width: 100%;
-    max-width: 900px;
-    margin-top: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
     padding: 20px;
-}
-
-h3 {
-    color: #343a40;
-    padding-bottom: 15px;
-    margin-top: 0;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th,
-td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.9em;
-}
-
-th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-    color: #495057;
-}
-
-tr:hover {
-    background-color: #f8f9fa;
-}
-
-.actions {
-    white-space: nowrap;
-}
-
-.action-button {
-    padding: 8px 12px;
-    font-size: 0.85em;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-right: 5px;
-}
-
-.action-button.block {
-    background-color: #ffc107;
-    /* Yellow */
     color: #333;
 }
 
-.action-button.block:hover {
-    background-color: #e0a800;
+.container {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.action-button.block:disabled {
-    background-color: #ffe08a;
-    cursor: not-allowed;
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
 }
 
-.action-button.unblock {
-    background-color: #17a2b8;
-    /* Cyan */
-    color: #fff;
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.action-button.unblock:hover {
-    background-color: #138496;
+.header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
 }
 
-.action-button.unblock:disabled {
-    background-color: #89d3df;
-    cursor: not-allowed;
+.accordion {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.action-button.limit {
-    background-color: #6f42c1;
-    /* Purple */
-    color: #fff;
+.accordion-item {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideInUp 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
 }
 
-.action-button.limit:hover {
-    background-color: #5a369e;
+@keyframes slideInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Status styling */
-.status-active {
-    color: #28a745;
-    /* Green */
+.accordion-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.accordion-item.active {
+    transform: translateY(0);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.accordion-header {
+    padding: 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.accordion-header:hover {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.card-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-brand-icon {
+    font-size: 24px;
+}
+
+.card-brand-icon.visa {
+    color: #1a1f71;
+}
+
+.card-brand-icon.mastercard {
+    color: #eb001b;
+}
+
+.card-brand-icon.rupay {
+    color: #00a651;
+}
+
+/* Add styles for other card types if needed (AMEX, DISCOVER) */
+.card-brand-icon.amex {
+    color: #007bc1;
+}
+
+.card-brand-icon.discover {
+    color: #ff6600;
+}
+
+
+.card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    font-family: 'Courier New', monospace;
+}
+
+.card-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.blocked {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.accordion-arrow {
+    font-size: 16px;
+    color: #64748b;
+    transition: transform 0.3s ease;
+}
+
+.accordion-item.active .accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.accordion-body {
+    display: none;
+    padding: 32px 24px;
+    background: #fafafa;
+    gap: 32px;
+}
+
+.accordion-item.active .accordion-body {
+    display: flex;
+    flex-direction: column;
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-model {
+    background-image: url("/assets/images/cardbg.jpg");
+    /* Ensure this path is correct */
+    background-size: cover;
+    background-position: center;
+    color: black;
+    padding-top: 24px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 10px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: large;
+}
+
+.bank-logo {
+    height: 60px;
+    width: auto;
+}
+
+.card-number-display {
+    font-size: 22px;
+    letter-spacing: 4px;
+    margin: 28px 0 12px 0;
     font-weight: bold;
 }
 
-.status-blocked {
-    color: #ffc107;
-    /* Yellow */
-    font-weight: bold;
+.details-text {
+    padding-top: 20px;
 }
 
-.issue-card-link {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 10px 15px;
-    background-color: #007bff;
+.card-details-row {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: black;
+}
+
+.card-details-row div {
+    display: flex;
+    flex-direction: column;
+    height: 60px;
+}
+
+.card-details-row label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.card-bottom {
+    display: flex;
+    align-items: center;
+}
+
+.card-logo {
+    height: 60px;
+    width: auto;
+    max-width: 70px;
+    object-fit: contain;
+    filter: brightness(1.1);
+}
+
+.cardholder-name {
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 20px;
+}
+
+.member-since {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    font-size: 10px;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+
+.card-info-fields {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.field:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.field-icon {
+    font-size: 16px;
+    color: #64748b;
+    width: 20px;
+    text-align: center;
+}
+
+.field-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.field-content strong {
+    font-size: 0.85rem;
+    color: #475569;
+    font-weight: 600;
+}
+
+.field-content span {
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.transaction-limit-value {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.transaction-limit-value:hover {
+    background: #e2e8f0;
+    color: #3b82f6;
+}
+
+.edit-icon {
+    font-size: 14px;
+    color: #64748b;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.field:hover .edit-icon {
+    opacity: 1;
+}
+
+/* Card Actions */
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px 0 0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+}
+
+.card-actions .btn {
+    padding: 10px 18px;
+    font-size: 0.9em;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.card-actions .action-button.block {
+    background-color: #dc3545;
     color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
 }
 
-.issue-card-link:hover {
-    background-color: #0056b3;
+.card-actions .action-button.block:hover {
+    background-color: #c82333;
+}
+
+.card-actions .action-button.block:disabled {
+    background-color: #f0a0a0;
+    cursor: not-allowed;
+}
+
+.card-actions .action-button.unblock {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.card-actions .action-button.unblock:hover {
+    background-color: #218838;
+}
+
+.card-actions .action-button.unblock:disabled {
+    background-color: #a0d8a0;
+    cursor: not-allowed;
+}
+
+/* Modal Styles - These will be in TransactionLimitModalComponent's CSS */
+/* Toast Styles - These will be in TransactionLimitModalComponent's CSS */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .accordion-header {
+        padding: 20px;
+    }
+
+    .accordion-body {
+        padding: 24px 20px;
+    }
+
+    .card-model {
+        padding: 24px;
+        max-width: 100%;
+    }
+
+    .card-number-display {
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-left {
+        gap: 12px;
+    }
+
+    .card-preview {
+        width: 40px;
+        height: 40px;
+    }
+
+    .card-brand-icon {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .accordion-header {
+        padding: 16px;
+    }
+
+    .accordion-body {
+        padding: 20px 16px;
+    }
+
+    .card-model {
+        padding: 20px;
+    }
+
+    .card-number-display {
+        font-size: 1.2rem;
+    }
 }

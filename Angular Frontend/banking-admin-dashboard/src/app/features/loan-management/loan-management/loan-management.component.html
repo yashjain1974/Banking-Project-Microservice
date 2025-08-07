@@ -1,14 +1,220 @@
-<div class="loan-management-container">
-    <h2>Loan Application Management</h2>
-    <button (click)="loadLoans()" class="refresh-button">Refresh Loans</button>
+<div class="container-fluid py-4 fade-in">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Admin Dashboard - Loan Application Management
+                            </h2>
+                            <p class="text-muted mb-0">Manage user KYC applications and verification status</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button (click)="loadLoans()" class="btn btn-outline-primary btn-sm" [disabled]="loading">
+                                <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i>
+                                {{ loading ? 'Loading...' : 'Refresh' }}
+                            </button>
+                            <button (click)="logout()" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-sign-out-alt me-1"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Navigation Cards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Admin Features
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/loan-management" class="btn btn-primary w-100 p-3 text-decoration-none">
+                                <i class="fas fa-money-bill-wave d-block mb-2 fs-4"></i>
+                                <strong>Manage Loans</strong>
+                                <small class="d-block text-muted">Loan applications & approvals</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/account-management"
+                                class="btn btn-outline-success w-100 p-3 text-decoration-none">
+                                <i class="fas fa-university d-block mb-2 fs-4"></i>
+                                <strong>Manage Accounts</strong>
+                                <small class="d-block text-muted">User accounts & settings</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/user-management"
+                                class="btn btn-outline-info w-100 p-3 text-decoration-none">
+                                <i class="fas fa-users d-block mb-2 fs-4"></i>
+                                <strong>Manage Users</strong>
+                                <small class="d-block text-muted">User profiles & roles</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/admin-dashboard"
+                                class="btn btn-outline-success w-100 p-3 text-decoration-none">
+                                <i class="fas fa-shield-alt d-block mb-2 fs-4"></i>
+                                <strong>Manage KYC</strong>
+                                <small class="d-block">KYC verification center</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- HTML Search Bar Section (Add this after the Navigation Cards section) -->
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-search me-2"></i>
+                        Search & Filter Loan Applications
+                    </h5>
 
-    <div *ngIf="loading" class="loading-message">Loading loan applications...</div>
+                    <div class="row g-3">
+                        <!-- Search Input -->
+                        <div class="col-md-4">
+                            <label for="searchInput" class="form-label">
+                                <i class="fas fa-search me-1"></i>
+                                Search Loans
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control"
+                                    placeholder="Search by Loan ID, User ID, Type, or Amount..."
+                                    [(ngModel)]="searchTerm" (input)="onSearchChange()" autocomplete="off">
+                                <button *ngIf="searchTerm" class="btn btn-outline-secondary" type="button"
+                                    (click)="searchTerm = ''; onSearchChange()" title="Clear search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
 
-    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
+                        <!-- Status Filter -->
+                        <div class="col-md-2">
+                            <label for="statusFilter" class="form-label">
+                                <i class="fas fa-filter me-1"></i>
+                                Status
+                            </label>
+                            <select id="statusFilter" class="form-select" [(ngModel)]="selectedStatus"
+                                (change)="onStatusFilterChange()">
+                                <option value="ALL">All Statuses</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="APPROVED">Approved</option>
+                                <option value="REJECTED">Rejected</option>
+                            </select>
+                        </div>
 
-    <div class="loan-list-section" *ngIf="!loading && allLoans.length > 0">
-        <h3>All Loan Applications ({{ allLoans.length }})</h3>
+                        <!-- Loan Type Filter -->
+                        <div class="col-md-2">
+                            <label for="loanTypeFilter" class="form-label">
+                                <i class="fas fa-tags me-1"></i>
+                                Loan Type
+                            </label>
+                            <select id="loanTypeFilter" class="form-select" [(ngModel)]="selectedLoanType"
+                                (change)="onLoanTypeFilterChange()">
+                                <option value="ALL">All Types</option>
+                                <option *ngFor="let type of getUniqueLoanTypes()" [value]="type">
+                                    {{ type }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Sort By -->
+                        <div class="col-md-2">
+                            <label for="sortBy" class="form-label">
+                                <i class="fas fa-sort me-1"></i>
+                                Sort By
+                            </label>
+                            <select id="sortBy" class="form-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+                                <option value="applicationDate">Application Date</option>
+                                <option value="amount">Amount</option>
+                                <option value="loanType">Loan Type</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort Direction -->
+                        <div class="col-md-1">
+                            <label for="sortDirection" class="form-label">
+                                <i class="fas fa-sort-amount-down me-1"></i>
+                                Order
+                            </label>
+                            <select id="sortDirection" class="form-select" [(ngModel)]="sortDirection"
+                                (change)="onSortChange()">
+                                <option value="desc">Desc</option>
+                                <option value="asc">Asc</option>
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-warning w-100" (click)="clearFilters()"
+                                title="Clear all filters">
+                                <i class="fas fa-broom"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Results Summary -->
+                    <div class="mt-3 pt-3 border-top" *ngIf="!loading">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="search-summary">
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-list-ol me-1"></i>
+                                    {{ filteredLoans.length }} of {{ allLoans.length }} loans
+                                </span>
+                                <span *ngIf="searchTerm" class="badge bg-info me-2">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search: "{{ searchTerm }}"
+                                </span>
+                                <span *ngIf="selectedStatus !== 'ALL'" class="badge bg-secondary me-2">
+                                    <i class="fas fa-filter me-1"></i>
+                                    Status: {{ selectedStatus }}
+                                </span>
+                                <span *ngIf="selectedLoanType !== 'ALL'" class="badge bg-success me-2">
+                                    <i class="fas fa-tags me-1"></i>
+                                    Type: {{ selectedLoanType }}
+                                </span>
+                            </div>
+                            <div class="quick-filters">
+                                <button type="button" class="btn btn-sm btn-outline-warning me-1"
+                                    (click)="selectedStatus = 'PENDING'; onStatusFilterChange()"
+                                    [class.active]="selectedStatus === 'PENDING'">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Pending Only
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success"
+                                    (click)="selectedStatus = 'APPROVED'; onStatusFilterChange()"
+                                    [class.active]="selectedStatus === 'APPROVED'">
+                                    <i class="fas fa-check me-1"></i>
+                                    Approved Only
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update your table section to use filteredLoans instead of allLoans -->
+    <div class="loan-list-section" *ngIf="!loading && filteredLoans.length > 0">
+        <h3>Loan Applications ({{ filteredLoans.length }})</h3>
         <p *ngIf="pendingLoans.length > 0" class="pending-count">
             <span class="highlight-pending">{{ pendingLoans.length }}</span> pending applications.
         </p>
@@ -31,7 +237,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let loan of allLoans">
+                <tr *ngFor="let loan of filteredLoans"> <!-- 👈 Changed from allLoans to filteredLoans -->
                     <td>{{ loan.loanId | slice:0:8 }}...</td>
                     <td>{{ loan.userId | slice:0:8 }}...</td>
                     <td>{{ loan.loanType }}</td>
@@ -56,7 +262,17 @@
         </table>
     </div>
 
+    <!-- Update the no loans message -->
+    <div *ngIf="!loading && filteredLoans.length === 0 && allLoans.length > 0" class="no-loans-message">
+        <div class="alert alert-warning">
+            <i class="fas fa-search me-2"></i>
+            <strong>No loans match your search criteria.</strong>
+            <button class="btn btn-link p-0 ms-2" (click)="clearFilters()">
+                <i class="fas fa-broom me-1"></i>Clear filters
+            </button>
+        </div>
+    </div>
+
     <div *ngIf="!loading && allLoans.length === 0 && !successMessage" class="no-loans-message">
         <p>No loan applications found in the system.</p>
     </div>
-</div>

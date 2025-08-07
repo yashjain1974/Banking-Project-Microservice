@@ -1,51 +1,223 @@
-<div class="admin-dashboard-container">
-    <h2>Admin Dashboard - KYC Verification</h2>
-    <button (click)="logout()" class="logout-button">Logout</button>
-    <button (click)="loadPendingUsers()" class="refresh-button">Refresh List</button>
-
-    <div class="admin-feature-links">
-        <a routerLink="/loan-management" class="feature-button">Manage Loans</a>
-        <a routerLink="/account-management" class="feature-button">Manage Accounts</a>
-        <a routerLink="/user-management" class="feature-button">Manage Users</a> <!-- New button -->
-        <a routerLink="/admin-dashboard" class="feature-button">Manage KYC</a>
+<div class="container-fluid py-4 fade-in">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-1 text-primary">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Admin Dashboard - KYC Verification
+                            </h2>
+                            <p class="text-muted mb-0">Manage user KYC applications and verification status</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button (click)="loadPendingUsers()" class="btn btn-outline-primary btn-sm"
+                                [disabled]="loading">
+                                <i class="fas fa-sync-alt me-1" [class.fa-spin]="loading"></i>
+                                {{ loading ? 'Loading...' : 'Refresh' }}
+                            </button>
+                            <button (click)="logout()" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-sign-out-alt me-1"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div *ngIf="loading" class="loading-message">Loading pending applications...</div>
-
-    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
-
-    <div *ngIf="!loading && pendingUsers.length > 0" class="user-list">
-        <h3>Pending KYC Applications ({{ pendingUsers.length }})</h3>
-        <p class="instruction-message">Click "Manage KYC" to see all users and approve/reject their KYC.</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Full Name</th>
-                    <th>Current Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let user of pendingUsers">
-                    <td>{{ user.userId | slice:0:8 }}...</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.firstName }} {{ user.lastName }}</td>
-                    <td><span [ngClass]="getKycStatusClass(user.kycStatus)">{{ user.kycStatus }}</span></td>
-                    <td>
-                        <button (click)="approveKyc(user.userId)" class="action-button approve">Approve</button>
-                        <button (click)="rejectKyc(user.userId)" class="action-button reject">Reject</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Navigation Cards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Admin Features
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/loan-management"
+                                class="btn btn-outline-primary w-100 p-3 text-decoration-none">
+                                <i class="fas fa-money-bill-wave d-block mb-2 fs-4"></i>
+                                <strong>Manage Loans</strong>
+                                <small class="d-block text-muted">Loan applications & approvals</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/account-management"
+                                class="btn btn-outline-success w-100 p-3 text-decoration-none">
+                                <i class="fas fa-university d-block mb-2 fs-4"></i>
+                                <strong>Manage Accounts</strong>
+                                <small class="d-block text-muted">User accounts & settings</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/user-management"
+                                class="btn btn-outline-info w-100 p-3 text-decoration-none">
+                                <i class="fas fa-users d-block mb-2 fs-4"></i>
+                                <strong>Manage Users</strong>
+                                <small class="d-block text-muted">User profiles & roles</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a routerLink="/admin-dashboard" class="btn btn-primary w-100 p-3 text-decoration-none">
+                                <i class="fas fa-shield-alt d-block mb-2 fs-4"></i>
+                                <strong>Manage KYC</strong>
+                                <small class="d-block ">KYC verification center</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div *ngIf="!loading && pendingUsers.length === 0 && !successMessage" class="no-pending-message">
-        <p>No pending KYC applications at the moment.</p>
+    <!-- Alert Messages -->
+    <div class="row mb-3" *ngIf="errorMessage || successMessage">
+        <div class="col-12">
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="clearMessages()"></button>
+            </div>
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" (click)="clearMessages()"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 class="text-muted">Loading pending KYC applications...</h5>
+                    <p class="text-muted mb-0">Please wait while we fetch the latest data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KYC Applications Table -->
+    <div *ngIf="!loading && pendingUsers.length > 0" class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>
+                                Pending KYC Applications
+                            </h5>
+                        </div>
+                        <span class="badge bg-warning text-dark fs-6">
+                            {{ pendingUsers.length }} pending
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="alert alert-info m-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instructions:</strong> Review each application carefully before approving or rejecting
+                        KYC status.
+                        This action will notify the user and update their account permissions.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">
+                                        <i class="fas fa-user me-1"></i>User Details
+                                    </th>
+                                    <th scope="col">
+                                        <i class="fas fa-envelope me-1"></i>Contact
+                                    </th>
+                                    <th scope="col">
+                                        <i class="fas fa-id-card me-1"></i>Full Name
+                                    </th>
+                                    <th scope="col">
+                                        <i class="fas fa-flag me-1"></i>Status
+                                    </th>
+                                    <th scope="col" class="text-center">
+                                        <i class="fas fa-cogs me-1"></i>Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let user of pendingUsers; trackBy: trackbyUserId" class="fade-in">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                style="width: 40px; height: 40px; font-weight: bold;">
+                                                {{ user.username.charAt(0).toUpperCase() }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ user.username }}</strong>
+                                                <br>
+                                                <small class="text-muted">ID: {{ user.userId | slice:0:8 }}...</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a [href]="'mailto:' + user.email" class="text-decoration-none">
+                                            {{ user.email }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+                                    </td>
+                                    <td>
+                                        <span [ngClass]="getKycStatusClass(user.kycStatus)">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ user.kycStatus }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <button (click)="approveKyc(user.userId)" class="btn btn-success btn-sm"
+                                                title="Approve KYC">
+                                                <i class="fas fa-check me-1"></i>Approve
+                                            </button>
+                                            <button (click)="rejectKyc(user.userId)" class="btn btn-danger btn-sm"
+                                                title="Reject KYC">
+                                                <i class="fas fa-times me-1"></i>Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Pending Applications -->
+    <div *ngIf="!loading && pendingUsers.length === 0 && !successMessage" class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-success mb-3">All Clear!</h3>
+                    <p class="text-muted mb-4">No pending KYC applications at the moment. All users are up to date.</p>
+                    <button (click)="loadPendingUsers()" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-2"></i>Check for Updates
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

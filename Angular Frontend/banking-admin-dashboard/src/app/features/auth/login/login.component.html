@@ -1,1 +1,125 @@
-<p>login works!</p>
+<div class="background-animation">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+</div>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+
+        <!-- Left Side - Branding -->
+        <div class="col-lg-6 d-none d-lg-flex left-panel">
+            <div class="branding-content">
+                <div class="logo-section" (click)="onLogoClick()">
+                    <i class="fas fa-university logo-icon"></i>
+                    <h1 class="brand-name">UGDI Bank</h1>
+                    <p class="brand-tagline">Professional Banking Solutions</p>
+                </div>
+
+                <div class="features-list" *ngIf="showWelcome">
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <span>Advanced Security</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-line feature-icon"></i>
+                        <span>Real-time Analytics</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-users feature-icon"></i>
+                        <span>Customer Management</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-cogs feature-icon"></i>
+                        <span>Administrative Controls</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="col-lg-6 col-12">
+            <div class="login-panel">
+                <div class="login-card">
+
+                    <!-- Mobile Logo -->
+                    <div class="mobile-logo d-lg-none">
+                        <i class="fas fa-university"></i>
+                        <h3>SecureBank Admin</h3>
+                    </div>
+
+                    <!-- Login Header -->
+                    <div class="login-header">
+                        <h2 class="login-title">
+                            <i class="fas fa-user-shield me-2"></i>
+                            Administrator Access
+                        </h2>
+                        <p class="login-subtitle">
+                            Secure login to access the administrative dashboard
+                        </p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div class="login-form">
+
+                        <!-- Security Notice -->
+                        <div class="security-notice">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span>This system uses Keycloak for secure authentication</span>
+                        </div>
+
+                        <!-- Login Button -->
+                        <button type="button" class="btn login-btn w-100" (click)="login()" [disabled]="isLoading">
+
+                            <span *ngIf="!isLoading" class="btn-content">
+                                <i class="fab fa-keycdn me-2"></i>
+                                Login with Keycloak
+                            </span>
+
+                            <span *ngIf="isLoading" class="btn-loading">
+                                <div class="spinner-border spinner-border-sm me-2"></div>
+                                Authenticating...
+                            </span>
+                        </button>
+
+                        <!-- Additional Info -->
+                        <div class="additional-info">
+                            <div class="info-item">
+                                <i class="fas fa-clock me-2"></i>
+                                <span>Session timeout: 8 hours</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-key me-2"></i>
+                                <span>Multi-factor authentication enabled</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="login-footer">
+                        <div class="footer-links">
+                            <a href="#" class="footer-link">
+                                <i class="fas fa-question-circle me-1"></i>
+                                Help
+                            </a>
+                            <a href="#" class="footer-link">
+                                <i class="fas fa-phone me-1"></i>
+                                Support
+                            </a>
+                            <a href="#" class="footer-link">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Privacy
+                            </a>
+                        </div>
+                        <p class="copyright">
+                            © 2024 SecureBank. All rights reserved.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

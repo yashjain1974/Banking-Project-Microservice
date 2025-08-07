@@ -1,43 +1,116 @@
-<div class="card-management-container">
-  <h2>Your Cards</h2>
-  <button (click)="loadUserCardsAndAccounts()" class="refresh-button">Refresh Cards</button>
+<div class="container">
+  <div class="header">
+    <h1>My Credit Cards</h1>
+    <p>Manage your payment methods</p>
+  </div>
 
   <div *ngIf="loading" class="loading-message">Loading your cards...</div>
   <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
   <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
 
-  <div *ngIf="!loading && userCards.length > 0" class="card-list">
-    <h3>Existing Cards ({{ userCards.length }})</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Card Number</th>
-          <th>Type</th>
-          <th>Linked Account</th>
-          <th>Issue Date</th>
-          <th>Expiry Date</th>
-          <th>Limit</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let card of userCards">
-          <td>{{ card.cardNumber | slice:0:4 }} **** **** {{ card.cardNumber | slice:-4 }}</td>
-          <td>{{ card.cardType }}</td>
-          <td>{{ getAccountNumber(card.accountId) }}</td>
-          <td>{{ card.issueDate | date:'shortDate' }}</td>
-          <td>{{ card.expiryDate | date:'shortDate' }}</td>
-          <td>{{ card.transactionLimit | currency:'INR':'symbol':'1.2-2' }}</td>
-          <td><span [ngClass]="getCardStatusClass(card.status)">{{ card.status }}</span></td>
-          <td class="actions">
-            <button (click)="blockCard(card.cardId, card.cardNumber)" [disabled]="card.status === CardStatus.BLOCKED" class="action-button block">Block</button>
-            <button (click)="unblockCard(card.cardId, card.cardNumber)" [disabled]="card.status === CardStatus.ACTIVE" class="action-button unblock">Unblock</button>
-            <button (click)="openUpdateLimitModal(card)" class="action-button limit">Update Limit</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="accordion" *ngIf="!loading && userCards.length > 0">
+    <div class="accordion-item" *ngFor="let card of userCards"
+      [class.active]="currentCardForLimitUpdate?.cardId === card.cardId">
+      <div class="accordion-header" (click)="toggleAccordion(card)">
+        <div class="header-left">
+          <div class="card-preview">
+            <i [class]="getCardBrandIconClass(card.cardType) + ' card-brand-icon'"></i>
+          </div>
+          <div class="card-info">
+            <span class="card-number">•••• •••• •••• {{ card.cardNumber | slice:-4 }}</span>
+            <span class="card-label">{{ card.cardType }} Card</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="status-badge" [ngClass]="getCardStatusClass(card.status)">{{ card.status }}</span>
+          <i class="fas fa-chevron-down accordion-arrow"></i>
+        </div>
+      </div>
+
+      <div class="accordion-body">
+        <div class="card-model">
+          <div class="card-top">
+            <div>
+              CREDIT CARD
+            </div>
+            <img class="bank-logo" src="assets/images/BANKLOGO.jpeg" alt="Bank Logo" />
+            <!-- Assuming BANKLOGO.jpeg in assets/images -->
+          </div>
+          <div class="card-number-display">{{ card.cardNumber | slice:0:4 }} •••• •••• {{ card.cardNumber | slice:-4 }}
+          </div>
+          <div class="card-details-row">
+            <div class="details-text">
+              <label>Valid From</label>
+              <span>{{ card.issueDate | date:'MM/yy' }}</span>
+            </div>
+            <div class="details-text">
+              <label>Expires</label>
+              <span>{{ card.expiryDate | date:'MM/yy' }}</span>
+            </div>
+            <div class="card-bottom">
+              <img class="card-logo" [src]="getCardLogoSrc(card.cardType)" [alt]="card.cardType + ' Logo'" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card-info-fields">
+          <div class="info-grid">
+            <div class="field">
+              <i class="fas fa-id-card field-icon"></i>
+              <div class="field-content">
+                <strong>Account ID</strong>
+                <span>{{ getAccountNumber(card.accountId) }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <i class="fas fa-credit-card field-icon"></i>
+              <div class="field-content">
+                <strong>Card Number</strong>
+                <span>{{ card.cardNumber }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <i class="fas fa-tag field-icon"></i>
+              <div class="field-content">
+                <strong>Card Type</strong>
+                <span>{{ card.cardType }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <i class="fas fa-calendar-plus field-icon"></i>
+              <div class="field-content">
+                <strong>Issue Date</strong>
+                <span>{{ card.issueDate | date:'shortDate' }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <i class="fas fa-calendar-times field-icon"></i>
+              <div class="field-content">
+                <strong>Expiry Date</strong>
+                <span>{{ card.expiryDate | date:'shortDate' }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <i class="fas fa-chart-line field-icon"></i>
+              <div class="field-content">
+                <strong>Transaction Limit</strong>
+                <span class="transaction-limit-value" (click)="openUpdateLimitModal(card)">
+                  {{ card.transactionLimit | currency:'INR':'symbol':'1.2-2' }}
+                </span>
+              </div>
+              <i class="fas fa-edit edit-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button (click)="blockCard(card.cardId, card.cardNumber)" [disabled]="card.status === CardStatus.BLOCKED"
+            class="btn action-button block">Block Card</button>
+          <button (click)="unblockCard(card.cardId, card.cardNumber)" [disabled]="card.status === CardStatus.ACTIVE"
+            class="btn action-button unblock">Unblock Card</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="!loading && userCards.length === 0 && !successMessage" class="no-cards-message">
@@ -45,3 +118,8 @@
     <a routerLink="/cards/issue" class="issue-card-link">Issue Card</a>
   </div>
 </div>
+
+<!-- Transaction Limit Modal (will be rendered by TransactionLimitModalComponent) -->
+<app-transaction-limit-modal *ngIf="isModalOpen" [card]="currentCardForLimitUpdate!"
+  (limitUpdated)="onLimitUpdated($event)" (closeModal)="onModalClose()">
+</app-transaction-limit-modal>

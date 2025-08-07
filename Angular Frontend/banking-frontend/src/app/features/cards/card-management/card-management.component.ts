@@ -5,15 +5,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // For update limit form
 import { CardService } from '../card.service';
 
+
 import { AccountService } from '../../accounts/account.service'; // To get account numbers for display
-import { CardResponse, CardStatus } from '../../../shared/models/card.model';
+import { CardResponse, CardStatus, CardType } from '../../../shared/models/card.model';
 import { AccountResponse } from '../../../shared/models/account.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { TransactionLimitModalComponent } from '../transaction-limit-modal/transaction-limit-modal.component';
+
 
 @Component({
   selector: 'app-card-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TransactionLimitModalComponent], // Add modal component
   templateUrl: './card-management.component.html',
   styleUrls: ['./card-management.component.css']
 })
@@ -22,13 +25,13 @@ export class CardManagementComponent implements OnInit {
   loading: boolean = true;
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  CardStatus = CardStatus; // For template usage
-
-  // For update limit modal/form
-  selectedCardIdForLimit: string | null = null;
-  newLimit: number | null = null;
+  CardStatus = CardStatus; // For template access
 
   userAccounts: AccountResponse[] = []; // To map accountId to accountNumber
+
+  // For modal control
+  isModalOpen: boolean = false;
+  currentCardForLimitUpdate: CardResponse | null = null;
 
   constructor(
     private cardService: CardService,
@@ -86,6 +89,23 @@ export class CardManagementComponent implements OnInit {
     return account ? account.accountNumber : 'N/A';
   }
 
+  // Refactored from inline JS toggleAccordion
+  toggleAccordion(card: CardResponse): void {
+    // Find the item in the list and toggle its active state
+    const index = this.userCards.findIndex(c => c.cardId === card.cardId);
+    if (index !== -1) {
+      // Add a property to CardResponse to track active state in UI
+      // Or simply manage it via a single activeCardId
+      // For simplicity, let's just toggle a class based on activeCardId
+      if (this.currentCardForLimitUpdate?.cardId === card.cardId) {
+        this.currentCardForLimitUpdate = null; // Collapse if already open
+      } else {
+        this.currentCardForLimitUpdate = card; // Expand this card
+      }
+    }
+  }
+
+  // Refactored from inline JS blockCard
   blockCard(cardId: string, cardNumber: string): void {
     if (confirm(`Are you sure you want to BLOCK card ${cardNumber}?`)) {
       this.cardService.blockCard(cardId).subscribe(
@@ -101,6 +121,7 @@ export class CardManagementComponent implements OnInit {
     }
   }
 
+  // Refactored from inline JS unblockCard
   unblockCard(cardId: string, cardNumber: string): void {
     if (confirm(`Are you sure you want to UNBLOCK card ${cardNumber}?`)) {
       this.cardService.unblockCard(cardId).subscribe(
@@ -116,42 +137,52 @@ export class CardManagementComponent implements OnInit {
     }
   }
 
+  // Refactored from inline JS openTransactionLimitModal
   openUpdateLimitModal(card: CardResponse): void {
-    this.selectedCardIdForLimit = card.cardId;
-    this.newLimit = card.transactionLimit; // Pre-fill with current limit
-    // Show modal (you'd typically use a CSS class or Angular Material dialog)
-    // For this example, we'll just use a simple prompt or alert.
-    const input = prompt(`Enter new transaction limit for card ${card.cardNumber}:`, card.transactionLimit.toString());
-    if (input !== null) {
-      const limit = parseFloat(input);
-      if (!isNaN(limit) && limit > 0) {
-        this.updateLimit(card.cardId, limit);
-      } else {
-        alert('Invalid limit entered. Please enter a positive number.');
-      }
-    }
+    this.currentCardForLimitUpdate = card; // Set the card for the modal
+    this.isModalOpen = true; // Open the modal
   }
 
-  updateLimit(cardId: string, limit: number): void {
-    this.errorMessage = null;
-    this.successMessage = null;
+  // Handler for modal close event
+  onModalClose(): void {
+    this.isModalOpen = false;
+    this.currentCardForLimitUpdate = null;
+  }
 
-    this.cardService.updateTransactionLimit(cardId, limit).subscribe(
-      (response) => {
-        this.successMessage = `Limit for card ${response.cardNumber.slice(-4)} updated to ₹${response.transactionLimit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
-        this.loadUserCardsAndAccounts(); // Reload list
-      },
-      (error) => {
-        console.error('Error updating limit:', error);
-        this.errorMessage = error.error?.message || 'Failed to update limit.';
-      }
-    );
+  // Handler for limit updated event from modal
+  onLimitUpdated(updatedCard: CardResponse): void {
+    this.successMessage = `Limit for card ${updatedCard.cardNumber.slice(-4)} updated to ₹${updatedCard.transactionLimit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`;
+    this.loadUserCardsAndAccounts(); // Reload cards to show updated limit
   }
 
   getCardStatusClass(status: CardStatus): string {
     switch (status) {
       case CardStatus.ACTIVE: return 'status-active';
       case CardStatus.BLOCKED: return 'status-blocked';
+      default: return '';
+    }
+  }
+
+  getCardBrandIconClass(cardType: CardType): string {
+    switch (cardType) {
+      case CardType.VISA: return 'fab fa-cc-visa visa';
+      case CardType.MASTERCARD: return 'fab fa-cc-mastercard mastercard';
+      case CardType.RUPAY: return 'fas fa-credit-card rupay'; // Font Awesome doesn't have fab fa-cc-rupay
+      case CardType.AMERICAN_EXPRESS: return 'fab fa-cc-amex amex';
+      case CardType.DISCOVER: return 'fab fa-cc-discover discover';
+      default: return 'fas fa-credit-card';
+    }
+  }
+
+  getCardLogoSrc(cardType: CardType): string {
+    // You'll need to place these images in your assets folder
+    // For now, these are placeholders. You can use SVG for better quality.
+    switch (cardType) {
+      case CardType.VISA: return 'assets/images/visa.png';
+      case CardType.MASTERCARD: return 'assets/images/mastercard.png';
+      case CardType.RUPAY: return 'assets/images/rupay.png';
+      case CardType.AMERICAN_EXPRESS: return 'assets/images/amex.png';
+      case CardType.DISCOVER: return 'assets/images/discover.png';
       default: return '';
     }
   }

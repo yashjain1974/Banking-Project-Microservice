@@ -1,45 +1,439 @@
+<!-- loan-details.component.html -->
 <div class="loan-details-container">
-    <h2>Your Loan Applications</h2>
-    <button (click)="loadUserLoans()" class="refresh-button">Refresh Loans</button>
-
-    <div *ngIf="loading" class="loading-message">Loading your loan applications...</div>
-    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
-
-    <div *ngIf="!loading && userLoans.length > 0" class="loan-list">
-        <h3>Existing Loan Applications ({{ userLoans.length }})</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Loan ID</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Tenure (Months)</th>
-                    <th>Interest Rate</th>
-                    <th>Application Date</th>
-                    <th>Status</th>
-                    <th>EMI</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let loan of userLoans">
-                    <td>{{ loan.loanId | slice:0:8 }}...</td>
-                    <td>{{ loan.loanType }}</td>
-                    <td>{{ loan.amount | currency:'INR':'symbol':'1.2-2' }}</td>
-                    <td>{{ loan.tenureInMonths }}</td>
-                    <td>{{ loan.interestRate | number:'1.2-2' }}%</td>
-                    <td>{{ loan.applicationDate | date:'short' }}</td>
-                    <td><span [ngClass]="getLoanStatusClass(loan.status)">{{ loan.status }}</span></td>
-                    <td>
-                        <button (click)="calculateEmiForLoan(loan.loanId)" class="emi-button">Calculate EMI</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Header Section -->
+    <div class="loan-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title">
+                    <i class="fas fa-history me-3"></i>
+                    Your Loan Applications
+                </h1>
+                <p class="page-subtitle">Track and manage all your loan applications in one place</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="header-actions">
+                    <button (click)="loadUserLoans()" class="btn btn-outline-light btn-refresh" [disabled]="loading">
+                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <i *ngIf="!loading" class="fas fa-sync-alt me-2"></i>
+                        {{ loading ? 'Refreshing...' : 'Refresh' }}
+                    </button>
+                    <a routerLink="/loans/apply" class="btn btn-light ms-2">
+                        <i class="fas fa-plus me-2"></i>
+                        Apply New Loan
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div *ngIf="!loading && userLoans.length === 0 && !successMessage" class="no-loans-message">
-        <p>You have no loan applications. Apply for one now!</p>
-        <a routerLink="/loans/apply" class="apply-loan-link">Apply for Loan</a>
+    <!-- Loading Message -->
+    <div *ngIf="loading" class="loading-message">
+        <div class="spinner-border text-primary me-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div>
+            <h5 class="mb-1">Loading your loan applications...</h5>
+            <p class="mb-0 text-muted">Please wait while we fetch your latest loan information</p>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = null" aria-label="Close"></button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div *ngIf="!loading && userLoans.length > 0" class="statistics-section">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card total-loans">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ getTotalLoans() }}</h3>
+                        <p>Total Applications</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card approved-loans">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ getApprovedLoans() }}</h3>
+                        <p>Approved Loans</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card total-amount">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ getTotalAmount() | currency:'INR':'symbol':'1.0-0' }}</h3>
+                        <p>Total Loan Amount</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card pending-loans">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ getPendingLoans() }}</h3>
+                        <p>Pending Applications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Search Section -->
+    <div *ngIf="!loading && userLoans.length > 0" class="filter-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search by Loan ID, Type, or Status"
+                            [(ngModel)]="searchTerm" (input)="applyFilters()">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="filter-controls">
+                    <select class="form-select me-2" [(ngModel)]="statusFilter" (change)="applyFilters()">
+                        <option value="">All Status</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="DISBURSED">Disbursed</option>
+                        <option value="COMPLETED">Completed</option>
+                    </select>
+                    <select class="form-select" [(ngModel)]="typeFilter" (change)="applyFilters()">
+                        <option value="">All Types</option>
+                        <option value="PERSONAL">Personal</option>
+                        <option value="HOME">Home</option>
+                        <option value="CAR">Car</option>
+                        <option value="BUSINESS">Business</option>
+                        <option value="EDUCATION">Education</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Applications List -->
+    <div *ngIf="!loading && userLoans.length > 0" class="loans-section">
+        <div class="section-header">
+            <h3>
+                <i class="fas fa-list me-2"></i>
+                Loan Applications
+                <span class="badge bg-primary ms-2">{{ getFilteredLoans().length }}</span>
+            </h3>
+            <div class="view-toggle">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm" [class.active]="viewMode === 'card'"
+                        (click)="setViewMode('card')">
+                        <i class="fas fa-th-large me-1"></i>Cards
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" [class.active]="viewMode === 'table'"
+                        (click)="setViewMode('table')">
+                        <i class="fas fa-table me-1"></i>Table
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card View -->
+        <div *ngIf="viewMode === 'card'" class="loan-cards">
+            <div class="row">
+                <div class="col-lg-6 col-xl-4 mb-4" *ngFor="let loan of getFilteredLoans(); trackBy: trackByLoanId">
+                    <div class="loan-card" [class.featured]="loan.status === 'APPROVED' || loan.status === 'DISBURSED'">
+                        <div class="card-header">
+                            <div class="loan-type">
+                                <i [class]="getLoanTypeIcon(loan.loanType)" class="me-2"></i>
+                                {{ getLoanTypeDisplay(loan.loanType) }}
+                            </div>
+                            <div class="loan-status">
+                                <span class="status-badge" [class]="getLoanStatusClass(loan.status)">
+                                    <i [class]="getStatusIcon(loan.status)" class="me-1"></i>
+                                    {{ loan.status }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="loan-amount">
+                                {{ loan.amount | currency:'INR':'symbol':'1.0-0' }}
+                            </div>
+                            <div class="loan-details">
+                                <div class="detail-row">
+                                    <span class="label">Loan ID:</span>
+                                    <span class="value">{{ loan.loanId | slice:0:12 }}...</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Tenure:</span>
+                                    <span class="value">{{ loan.tenureInMonths }} months</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Interest Rate:</span>
+                                    <span class="value">{{ loan.interestRate | number:'1.2-2' }}% p.a.</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Applied Date:</span>
+                                    <span class="value">{{ loan.applicationDate | date:'mediumDate' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-sm me-2" (click)="calculateEmiForLoan(loan.loanId)">
+                                <i class="fas fa-calculator me-1"></i>Calculate EMI
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" (click)="viewLoanDetails(loan)">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div *ngIf="viewMode === 'table'" class="loan-table-container">
+            <div class="table-responsive">
+                <table class="table loan-table">
+                    <thead>
+                        <tr>
+                            <th (click)="sortBy('loanId')" class="sortable">
+                                <i class="fas fa-hashtag me-2"></i>Loan ID
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th (click)="sortBy('loanType')" class="sortable">
+                                <i class="fas fa-tags me-2"></i>Type
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th (click)="sortBy('amount')" class="sortable text-end">
+                                <i class="fas fa-rupee-sign me-2"></i>Amount
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th (click)="sortBy('tenureInMonths')" class="sortable text-center">
+                                <i class="fas fa-calendar-alt me-2"></i>Tenure
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th (click)="sortBy('interestRate')" class="sortable text-center">
+                                <i class="fas fa-percent me-2"></i>Rate
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th (click)="sortBy('applicationDate')" class="sortable">
+                                <i class="fas fa-calendar me-2"></i>Applied Date
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th (click)="sortBy('status')" class="sortable text-center">
+                                <i class="fas fa-info-circle me-2"></i>Status
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let loan of getFilteredLoans(); trackBy: trackByLoanId" class="loan-row"
+                            [class.featured]="loan.status === 'APPROVED' || loan.status === 'DISBURSED'">
+                            <td>
+                                <div class="loan-id">
+                                    <span class="id-short">{{ loan.loanId | slice:0:8 }}...</span>
+                                    <small class="text-muted d-block">{{ loan.loanId | slice:0:16 }}...</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="loan-type-cell">
+                                    <i [class]="getLoanTypeIcon(loan.loanType)" class="me-2"></i>
+                                    {{ getLoanTypeDisplay(loan.loanType) }}
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="amount-cell">
+                                    <strong>{{ loan.amount | currency:'INR':'symbol':'1.0-0' }}</strong>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark">{{ loan.tenureInMonths }} months</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="rate-badge">{{ loan.interestRate | number:'1.2-2' }}%</span>
+                            </td>
+                            <td>
+                                <div class="date-cell">
+                                    {{ loan.applicationDate | date:'mediumDate' }}
+                                    <small class="text-muted d-block">{{ loan.applicationDate | date:'shortTime'
+                                        }}</small>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="status-badge" [class]="getLoanStatusClass(loan.status)">
+                                    <i [class]="getStatusIcon(loan.status)" class="me-1"></i>
+                                    {{ loan.status }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline-secondary btn-sm me-1"
+                                        (click)="calculateEmiForLoan(loan.loanId)" title="Calculate EMI">
+                                        <i class="fas fa-calculator"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" (click)="viewLoanDetails(loan)"
+                                        title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="getFilteredLoans().length > pageSize" class="pagination-section">
+            <nav aria-label="Loan applications pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="previousPage()" href="javascript:void(0)">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+                        <a class="page-link" (click)="goToPage(page)" href="javascript:void(0)">{{ page }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+                        <a class="page-link" (click)="nextPage()" href="javascript:void(0)">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && userLoans.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-file-contract"></i>
+        </div>
+        <h3>No Loan Applications Found</h3>
+        <p class="text-muted">You haven't applied for any loans yet. Start your financial journey today!</p>
+        <div class="empty-actions">
+            <a routerLink="/loans/apply" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Apply for Your First Loan
+            </a>
+            <a href="#" class="btn btn-outline-primary btn-lg ms-2" (click)="openLoanGuide()">
+                <i class="fas fa-book me-2"></i>Loan Guide
+            </a>
+        </div>
+        <div class="empty-benefits mt-4">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-bolt text-warning fa-2x mb-2"></i>
+                    <h6>Quick Approval</h6>
+                    <small class="text-muted">Get approved in minutes</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-shield-alt text-success fa-2x mb-2"></i>
+                    <h6>Secure Process</h6>
+                    <small class="text-muted">Bank-grade security</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-percentage text-info fa-2x mb-2"></i>
+                    <h6>Best Rates</h6>
+                    <small class="text-muted">Competitive interest rates</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Details Modal -->
+    <div class="modal fade" id="loanDetailsModal" tabindex="-1" aria-labelledby="loanDetailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loanDetailsModalLabel">
+                        <i class="fas fa-file-contract me-2"></i>Loan Application Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" *ngIf="selectedLoan">
+                    <!-- Modal content will be populated when loan is selected -->
+                    <div class="loan-detail-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Basic Information</h6>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Loan ID:</strong></td>
+                                        <td>{{ selectedLoan.loanId }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Type:</strong></td>
+                                        <td>{{ getLoanTypeDisplay(selectedLoan.loanType) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Amount:</strong></td>
+                                        <td>{{ selectedLoan.amount | currency:'INR':'symbol':'1.2-2' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            <span class="status-badge"
+                                                [class]="getLoanStatusClass(selectedLoan.status)">
+                                                {{ selectedLoan.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Loan Terms</h6>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Tenure:</strong></td>
+                                        <td>{{ selectedLoan.tenureInMonths }} months</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Interest Rate:</strong></td>
+                                        <td>{{ selectedLoan.interestRate | number:'1.2-2' }}% p.a.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Applied Date:</strong></td>
+                                        <td>{{ selectedLoan.applicationDate | date:'full' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary"
+                        (click)="calculateEmiForLoan(selectedLoan?.loanId || '')">
+                        <i class="fas fa-calculator me-1"></i>Calculate EMI
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

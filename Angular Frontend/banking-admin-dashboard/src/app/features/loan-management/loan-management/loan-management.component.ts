@@ -1,29 +1,37 @@
-// src/app/features/loan-management/loan-management.component.ts
-
+// Updated TypeScript Component (loan-management.component.ts)
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // For ngIf, ngFor
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; // 👈 Add this for ngModel
 import { LoanService } from '../loan.service';
 import { LoanResponse, LoanStatus } from '../../../shared/models/loan.model';
 import { Observable } from 'rxjs';
-
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-loan-management',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, FormsModule], // 👈 Add FormsModule
   templateUrl: './loan-management.component.html',
   styleUrls: ['./loan-management.component.css']
 })
 export class LoanManagementComponent implements OnInit {
-  [x: string]: any;
-  LoanStatus = LoanStatus; // 👈 exposes enum for template use
+  LoanStatus = LoanStatus;
   allLoans: LoanResponse[] = [];
+  filteredLoans: LoanResponse[] = []; // 👈 Add filtered loans array
   pendingLoans: LoanResponse[] = [];
   loading: boolean = true;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  constructor(private loanService: LoanService) { }
+  // 👈 Search properties
+  searchTerm: string = '';
+  selectedStatus: string = 'ALL';
+  selectedLoanType: string = 'ALL';
+  sortBy: string = 'applicationDate';
+  sortDirection: 'asc' | 'desc' = 'desc';
+
+  constructor(private loanService: LoanService, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.loadLoans();
@@ -37,7 +45,9 @@ export class LoanManagementComponent implements OnInit {
     this.loanService.getAllLoans().subscribe(
       (loans) => {
         this.allLoans = loans;
+        this.filteredLoans = [...loans]; // 👈 Initialize filtered loans
         this.pendingLoans = loans.filter(loan => loan.status === LoanStatus.PENDING);
+        this.applyFilters(); // 👈 Apply initial filters
         this.loading = false;
         if (this.pendingLoans.length === 0) {
           this.successMessage = 'No pending loan applications found.';
@@ -49,6 +59,93 @@ export class LoanManagementComponent implements OnInit {
         this.loading = false;
       }
     );
+  }
+
+  // 👈 Search and Filter Methods
+  applyFilters(): void {
+    let filtered = [...this.allLoans];
+
+    // Apply search term filter
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(loan =>
+        loan.loanId.toLowerCase().includes(term) ||
+        loan.userId.toLowerCase().includes(term) ||
+        loan.loanType.toLowerCase().includes(term) ||
+        loan.amount.toString().includes(term)
+      );
+    }
+
+    // Apply status filter
+    if (this.selectedStatus !== 'ALL') {
+      filtered = filtered.filter(loan => loan.status === this.selectedStatus);
+    }
+
+    // Apply loan type filter
+    if (this.selectedLoanType !== 'ALL') {
+      filtered = filtered.filter(loan => loan.loanType === this.selectedLoanType);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortBy) {
+        case 'amount':
+          aValue = a.amount;
+          bValue = b.amount;
+          break;
+        case 'applicationDate':
+          aValue = new Date(a.applicationDate);
+          bValue = new Date(b.applicationDate);
+          break;
+        case 'loanType':
+          aValue = a.loanType;
+          bValue = b.loanType;
+          break;
+        default:
+          aValue = a.applicationDate;
+          bValue = b.applicationDate;
+      }
+
+      if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    this.filteredLoans = filtered;
+  }
+
+  onSearchChange(): void {
+    this.applyFilters();
+  }
+
+  onStatusFilterChange(): void {
+    this.applyFilters();
+  }
+
+  onLoanTypeFilterChange(): void {
+    this.applyFilters();
+  }
+
+  onSortChange(): void {
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedStatus = 'ALL';
+    this.selectedLoanType = 'ALL';
+    this.sortBy = 'applicationDate';
+    this.sortDirection = 'desc';
+    this.applyFilters();
+  }
+
+  // 👈 Get unique loan types for filter dropdown
+  getUniqueLoanTypes(): string[] {
+    const types = [...new Set(this.allLoans.map(loan => loan.loanType))];
+    return types.sort();
   }
 
   updateLoanStatus(loanId: string, action: 'approve' | 'reject'): void {
@@ -70,13 +167,17 @@ export class LoanManagementComponent implements OnInit {
     actionObservable.subscribe(
       (updatedLoan) => {
         this.successMessage = `Loan ${updatedLoan.loanId} ${updatedLoan.status}D successfully.`;
-        this.loadLoans(); // Reload list after update
+        this.loadLoans();
       },
       (error) => {
         console.error(`Error ${action}ing loan ${loanId}:`, error);
         this.errorMessage = error.error?.message || `Failed to ${action} loan ${loanId}.`;
       }
     );
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   getLoanStatusClass(status: LoanStatus): string {

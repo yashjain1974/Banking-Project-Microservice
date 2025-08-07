@@ -18,6 +18,7 @@ import { CardManagementComponent } from './features/cards/card-management/card-m
 import { authGuard } from './core/guards/auth.guard';
 import { AuthenticatedLayoutComponent } from './features/layout/authenticated-layout/authenticated-layout.component';
 import { SidebarComponent } from './features/layout/sidebar/sidebar.component';
+import { NotificationListComponent } from './features/notifications/notification-list/notification-list.component';
 
 export const routes: Routes = [
     // Public routes (no layout)
@@ -42,6 +43,7 @@ export const routes: Routes = [
             { path: 'accounts', component: AccountsListComponent },
             { path: 'transactions/history', component: TransactionHistoryComponent },
             { path: 'transactions/deposit', component: DepositComponent },
+            { path: 'banking/notifications', component: NotificationListComponent }, // New route for notifications
             { path: 'transactions/withdraw', component: WithdrawComponent },
             { path: 'transactions/transfer', component: TransferComponent },
             { path: 'loans', redirectTo: '/loans/history', pathMatch: 'full' },
@@ -50,6 +52,7 @@ export const routes: Routes = [
             { path: 'cards', redirectTo: '/cards/manage', pathMatch: 'full' },
             { path: 'cards/manage', component: CardManagementComponent },
             { path: 'cards/issue', component: CardIssuanceComponent },
+
         ]
     },
 

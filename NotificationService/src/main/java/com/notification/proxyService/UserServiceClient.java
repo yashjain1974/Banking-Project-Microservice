@@ -47,7 +47,7 @@ public interface UserServiceClient {
         return new UserDto(
                 userId,
                 "fallback_user",
-                "fallback.user@example.com", // Fallback email for debugging
+                "yash191174@gmail.com", // Fallback email for debugging
                 UserDto.UserRole.CUSTOMER,
                 LocalDateTime.now(),
                 "Fallback", "User", LocalDate.of(1970, 1, 1), "N/A", "N/A", UserDto.KycStatus.PENDING

@@ -5,12 +5,14 @@ import { CommonModule } from '@angular/common'; // For ngIf, ngFor
 import { FormsModule } from '@angular/forms'; // For ngModel in edit form
 import { UserProfileService, UserProfile, UserProfileUpdateRequest } from '../user-profile/user-profile.service'; // Import service and interfaces
 import { KycStatus, UserRole } from '../../../shared/models/user.model';
- // Import shared enums
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+// Import shared enums
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Include FormsModule
+  imports: [CommonModule, FormsModule, RouterLink], // Include FormsModule
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.css']
 })
@@ -25,7 +27,7 @@ export class UserManagementComponent implements OnInit {
   userRoles = Object.values(UserRole); // For dropdown
   kycStatuses = Object.values(KycStatus); // For dropdown
 
-  constructor(private userProfileService: UserProfileService) { }
+  constructor(private userProfileService: UserProfileService, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.loadAllUsers();
@@ -89,7 +91,9 @@ export class UserManagementComponent implements OnInit {
       }
     );
   }
-
+  logout(): void {
+    this.authService.logout();
+  }
   cancelEdit(): void {
     this.selectedUser = null;
     this.errorMessage = null;
