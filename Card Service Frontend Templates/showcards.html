@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Credit Card Accordion</title>
+  <link rel="stylesheet" href="showcards.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>My Credit Cards</h1>
+      <p>Manage your payment methods</p>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-item" data-card-type="VISA">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="header-left">
+            <div class="card-preview">
+              <i class="fab fa-cc-visa card-brand-icon visa"></i>
+            </div>
+            <div class="card-info">
+              <span class="card-number">•••• •••• •••• 1234</span>
+              <span class="card-label">Visa Credit Card</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="status-badge active">Active</span>
+            <i class="fas fa-chevron-down accordion-arrow"></i>
+          </div>
+        </div>
+
+        <div class="accordion-body">
+          <div class="card-model">
+            <div class="card-top">
+              <div>
+                CREDIT CARD
+              </div>
+              <img class="bank-logo" src="BANKLOGO.jpeg" alt="Bank Logo" />
+            </div>
+            <div class="card-number-display">•••• •••• •••• 1234</div>
+            <div class="card-details-row">
+              <div class="details-text">
+                <label>Valid From</label>
+                <span>01/23</span>
+              </div>
+              <div class="details-text">
+                <label>Expires</label>
+                <span>01/28</span>
+              </div>
+              <div class="card-bottom">
+                <img class="card-logo" src="" alt="Card Logo" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card-info-fields">
+            <div class="info-grid">
+              <div class="field">
+                <i class="fas fa-id-card field-icon"></i>
+                <div class="field-content">
+                  <strong>Account ID</strong>
+                  <span>ACC-987654</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-credit-card field-icon"></i>
+                <div class="field-content">
+                  <strong>Card Number</strong>
+                  <span>1234-5678-9012-3456</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-tag field-icon"></i>
+                <div class="field-content">
+                  <strong>Card Type</strong>
+                  <span>VISA</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-calendar-plus field-icon"></i>
+                <div class="field-content">
+                  <strong>Issue Date</strong>
+                  <span>2023-01-15</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-calendar-times field-icon"></i>
+                <div class="field-content">
+                  <strong>Expiry Date</strong>
+                  <span>2028-01-14</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-chart-line field-icon"></i>
+                <div class="field-content">
+                  <strong>Transaction Limit</strong>
+                  <span class="transaction-limit-value" onclick="openTransactionLimitModal('ACC-987654', '100000')">₹100,000</span>
+                </div>
+                <i class="fas fa-edit edit-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" data-card-type="MASTERCARD">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="header-left">
+            <div class="card-preview">
+              <i class="fab fa-cc-mastercard card-brand-icon mastercard"></i>
+            </div>
+            <div class="card-info">
+              <span class="card-number">•••• •••• •••• 5678</span>
+              <span class="card-label">Mastercard Credit Card</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="status-badge active">Active</span>
+            <i class="fas fa-chevron-down accordion-arrow"></i>
+          </div>
+        </div>
+
+        <div class="accordion-body">
+          <div class="card-model">
+            <div class="card-top">
+              <div>
+                CREDIT CARD
+              </div>
+              <img class="bank-logo" src="BANKLOGO.jpeg" alt="Bank Logo" />
+            </div>
+            <div class="card-number-display">•••• •••• •••• 5678</div>
+            <div class="card-details-row">
+              <div class="details-text">
+                <label>Valid From</label>
+                <span>03/22</span>
+              </div>
+              <div class="details-text">
+                <label>Expires</label>
+                <span>03/27</span>
+              </div>
+              <div class="card-bottom">
+                <img class="card-logo" src="" alt="Card Logo" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card-info-fields">
+            <div class="info-grid">
+              <div class="field">
+                <i class="fas fa-id-card field-icon"></i>
+                <div class="field-content">
+                  <strong>Account ID</strong>
+                  <span>ACC-123456</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-credit-card field-icon"></i>
+                <div class="field-content">
+                  <strong>Card Number</strong>
+                  <span>5678-9012-3456-7890</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-tag field-icon"></i>
+                <div class="field-content">
+                  <strong>Card Type</strong>
+                  <span>MASTERCARD</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-calendar-plus field-icon"></i>
+                <div class="field-content">
+                  <strong>Issue Date</strong>
+                  <span>2022-03-10</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-calendar-times field-icon"></i>
+                <div class="field-content">
+                  <strong>Expiry Date</strong>
+                  <span>2027-03-09</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-chart-line field-icon"></i>
+                <div class="field-content">
+                  <strong>Transaction Limit</strong>
+                  <span class="transaction-limit-value" onclick="openTransactionLimitModal('ACC-123456', '150000')">₹150,000</span>
+                </div>
+                <i class="fas fa-edit edit-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" data-card-type="RUPAY">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="header-left">
+            <div class="card-preview">
+              <i class="fas fa-credit-card card-brand-icon rupay"></i>
+            </div>
+            <div class="card-info">
+              <span class="card-number">•••• •••• •••• 9012</span>
+              <span class="card-label">RuPay Debit Card</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="status-badge blocked">Blocked</span>
+            <i class="fas fa-chevron-down accordion-arrow"></i>
+          </div>
+        </div>
+
+        <div class="accordion-body">
+          <div class="card-model">
+            <div class="card-top">
+              <div>
+                DEBIT CARD
+              </div>
+              <img class="bank-logo" src="BANKLOGO.jpeg" alt="Bank Logo" />
+            </div>
+            <div class="card-number-display">•••• •••• •••• 9012</div>
+            <div class="card-details-row">
+              <div class="details-text">
+                <label>Valid From</label>
+                <span>06/21</span>
+              </div>
+              <div class="details-text">
+                <label>Expires</label>
+                <span>06/26</span>
+              </div>
+              <div class="card-bottom">
+                <img class="card-logo" src="" alt="Card Logo" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card-info-fields">
+            <div class="info-grid">
+              <div class="field">
+                <i class="fas fa-id-card field-icon"></i>
+                <div class="field-content">
+                  <strong>Account ID</strong>
+                  <span>ACC-456789</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-credit-card field-icon"></i>
+                <div class="field-content">
+                  <strong>Card Number</strong>
+                  <span>9012-3456-7890-1234</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-tag field-icon"></i>
+                <div class="field-content">
+                  <strong>Card Type</strong>
+                  <span>RUPAY</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-calendar-plus field-icon"></i>
+                <div class="field-content">
+                  <strong>Issue Date</strong>
+                  <span>2021-06-15</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-calendar-times field-icon"></i>
+                <div class="field-content">
+                  <strong>Expiry Date</strong>
+                  <span>2026-06-14</span>
+                </div>
+              </div>
+              <div class="field">
+                <i class="fas fa-chart-line field-icon"></i>
+                <div class="field-content">
+                  <strong>Transaction Limit</strong>
+                  <span class="transaction-limit-value" onclick="openTransactionLimitModal('ACC-456789', '50000')">₹50,000</span>
+                </div>
+                <i class="fas fa-edit edit-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Limit Modal -->
+  <div id="transactionLimitModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Update Transaction Limit</h2>
+        <span class="close" onclick="closeTransactionLimitModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="account-info">
+          <i class="fas fa-credit-card"></i>
+          <span>Account ID: <strong id="modalAccountId"></strong></span>
+        </div>
+        
+        <div class="input-group">
+          <label for="newLimit">New Transaction Limit</label>
+          <div class="input-wrapper">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="newLimit" placeholder="Enter new limit" min="1000" max="1000000" step="1000">
+          </div>
+          <div class="input-help">
+            <small>Minimum: ₹1,000 | Maximum: ₹10,00,000</small>
+          </div>
+        </div>
+
+        <div class="current-limit">
+          <span>Current Limit: <strong id="currentLimitDisplay"></strong></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="closeTransactionLimitModal()">Cancel</button>
+        <button class="btn btn-update" onclick="updateTransactionLimit()">Update Limit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div id="successToast" class="toast">
+    <i class="fas fa-check-circle"></i>
+    <span>Transaction limit updated successfully!</span>
+  </div>
+
+  <script>
+    let currentAccountId = '';
+    let currentLimitValue = '';
+
+    function toggleAccordion(header) {
+      const item = header.parentElement;
+      const isActive = item.classList.contains("active");
+      
+      // Close all accordion items
+      document.querySelectorAll('.accordion-item').forEach(accordionItem => {
+        accordionItem.classList.remove("active");
+      });
+      
+      // Open clicked item if it wasn't already active
+      if (!isActive) {
+        item.classList.add("active");
+        
+        const cardType = item.getAttribute("data-card-type");
+        const logo = item.querySelector(".card-logo");
+
+        if (cardType === "VISA") {
+          logo.src = "visa.png";
+          logo.alt = "Visa Logo";
+        } else if (cardType === "MASTERCARD") {
+          logo.src = "mastercard.png";
+          logo.alt = "MasterCard Logo";
+        } else if (cardType === "RUPAY") {
+          logo.src = "rupay.png";
+          logo.alt = "Rupay Logo";
+        } else {
+          logo.src = "";
+          logo.alt = "Card Logo";
+        }
+      }
+    }
+
+
+  </script>
+</body>
+</html>
