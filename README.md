@@ -8,6 +8,9 @@
 
 ## Project Overview
 
+[![Watch the video](<img width="2816" height="1536" alt="Gemini_Generated_Image_ksn6xnksn6xnksn6 (3)" src="https://github.com/user-attachments/assets/21df5934-82c8-4696-88f7-add2dbf7f13f" />
+)]([https://www.youtube.com/watch?v=dQw4w9WgXcQ](https://youtu.be/J4Xj_8pak50))
+
 UGDI Bank is a modern, full-stack digital banking platform built using a microservices architecture. The project demonstrates enterprise-grade application development with high scalability, security, and resilience. It provides a comprehensive suite of banking functionalities through a distributed system of independent services.
 
 ## 🌟 Key Features
