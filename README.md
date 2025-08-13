@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-[![Watch the video](<img width="2816" height="1536" alt="Thumbnail" src="https://github.com/user-attachments/assets/e3a585ec-ca12-42b1-b11e-730749506555" />)
+[![Watch the video](https://lh3.googleusercontent.com/gg/AAHar4fLqml8H3nYSNYbomLTFEJ80AgYCE-mdJ5fDVngvbGul_SdCi53Sfxnl7_CJZxA-dUxIgS_ikiG9WfaYFsUZNcNrpkP5hG74rV3Wn7FZQ4jjzLlhpvWFdpCGr0JHDXqea1Jjc6V1K1BKTSfq-fA_rbi9Ip6k4GN66lrfBLh1AB3nrvcPdw4dCWS3RpMXC0T1YG14lf_LEEEsVUXnuJZ4CTu3319hb5t9CxB-G4sEcJSai0l6PJRHEcaWs9hx7RCMGMOD4HDLZ6LA_OEYcyMqytQ4RbKf-PmNpUEfQfzgHmuxvxBcYKMUhTxahOAe2XnwJ4Ylc4lERM4x158qB66KGsS)
 ](https://youtu.be/J4Xj_8pak50)
 
 
