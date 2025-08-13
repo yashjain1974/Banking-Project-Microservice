@@ -7,9 +7,9 @@
 ![Oracle](https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 
 ## Project Overview
+<img width="913" height="500" alt="image" src="https://github.com/user-attachments/assets/054c41c6-c5e8-48c1-ad1c-e598419ccbc0" />
 
-[![Watch the video](https://lh3.googleusercontent.com/gg/AAHar4fLqml8H3nYSNYbomLTFEJ80AgYCE-mdJ5fDVngvbGul_SdCi53Sfxnl7_CJZxA-dUxIgS_ikiG9WfaYFsUZNcNrpkP5hG74rV3Wn7FZQ4jjzLlhpvWFdpCGr0JHDXqea1Jjc6V1K1BKTSfq-fA_rbi9Ip6k4GN66lrfBLh1AB3nrvcPdw4dCWS3RpMXC0T1YG14lf_LEEEsVUXnuJZ4CTu3319hb5t9CxB-G4sEcJSai0l6PJRHEcaWs9hx7RCMGMOD4HDLZ6LA_OEYcyMqytQ4RbKf-PmNpUEfQfzgHmuxvxBcYKMUhTxahOAe2XnwJ4Ylc4lERM4x158qB66KGsS)
-](https://youtu.be/J4Xj_8pak50)
+[![Watch the video]](https://youtu.be/J4Xj_8pak50)
 
 
 UGDI Bank is a modern, full-stack digital banking platform built using a microservices architecture. The project demonstrates enterprise-grade application development with high scalability, security, and resilience. It provides a comprehensive suite of banking functionalities through a distributed system of independent services.
